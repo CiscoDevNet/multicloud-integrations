@@ -1,0 +1,543 @@
+AWSTemplateFormatVersion: 2010-09-09
+##
+# Resources
+##
+Resources:
+  PublicNic1:
+    Type: 'AWS::EC2::NetworkInterface'
+    Properties:
+      SourceDestCheck: 'true'
+      PrivateIpAddress: !Ref PublicInterfaceIP1
+      GroupSet:
+      - !Ref MulticloudCsrSecurityGroup
+      SubnetId: !Ref PublicSubnet1
+      Tags:
+      - Key: 'Name'
+        Value: 'public-interface1'
+
+  PrivateNic1:
+    Type: 'AWS::EC2::NetworkInterface'
+    Properties:
+      SourceDestCheck: 'false'
+      PrivateIpAddress: !Ref PrivateInterfaceIP1
+      GroupSet:
+        - !Ref MulticloudCsrSecurityGroup
+      SubnetId: !Ref PrivateSubnet1
+      Tags:
+        - Key: 'Name'
+          Value: 'private-nic1'
+
+  PrivateRouteTable1:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      DestinationCidrBlock: !Ref OnPremCidr1
+      RouteTableId:
+        !Ref PrivateRouteTableId1
+      NetworkInterfaceId: !Ref PrivateNic1
+
+  PrivateRouteTable2:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      DestinationCidrBlock: !Ref OnPremCidr1
+      RouteTableId:
+        !Ref PrivateRouteTableId2
+      NetworkInterfaceId: !Ref PrivateNic1
+
+  PrivateRouteTable3:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      DestinationCidrBlock: !Ref OnPremCidr1
+      RouteTableId:
+        !Ref PrivateRouteTableId3
+      NetworkInterfaceId: !Ref PrivateNic1
+
+  ##
+  # Security Group Configuration
+  ##
+
+  MulticloudCsrSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      VpcId: !Ref VPC
+      GroupDescription: Allows access for IPsec, SSH and ping traffic
+      SecurityGroupIngress:
+        # Encapsulating Security Payload (ESP)
+        - IpProtocol: '50'
+          CidrIp: 0.0.0.0/0
+        # UDP
+        - IpProtocol: udp
+          FromPort: '500'
+          ToPort: '500'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: udp
+          FromPort: '4500'
+          ToPort: '4500'
+          CidrIp: 0.0.0.0/0
+        # ICMP
+        - IpProtocol: icmp
+          FromPort: '-1'
+          ToPort: '-1'
+          CidrIp:
+            !Ref PrivateSubnetCidr1
+        - IpProtocol: icmp
+          FromPort: '-1'
+          ToPort: '-1'
+          CidrIp: <ENTERPRISE_CIDR_HERE>
+        - IpProtocol: icmp
+          FromPort: '-1'
+          ToPort: '-1'
+          CidrIp:
+            !Ref PrivateSubnetCidr2
+        - IpProtocol: icmp
+          FromPort: '-1'
+          ToPort: '-1'
+          CidrIp: <ENTERPRISE_CIDR_HERE>
+        - IpProtocol: icmp
+          FromPort: '-1'
+          ToPort: '-1'
+          CidrIp:
+            !Ref PrivateSubnetCidr3
+        - IpProtocol: icmp
+          FromPort: '-1'
+          ToPort: '-1'
+          CidrIp: <ENTERPRISE_CIDR_HERE>
+        # TCP
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: !Ref InboundSSH
+      Tags:
+        - Key: 'Name'
+          Value: csr-sec-group'
+  ##
+  # EC2 Configuration
+  ##
+  MulticloudCSRInstance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: !Ref InstanceType
+      ImageId: !FindInMap
+        - CiscoCsrAMI
+        - !Ref 'AWS::Region'
+        - !Ref LicenseModel
+      KeyName: !Ref KeyName
+      NetworkInterfaces:
+        - DeviceIndex: '0'
+          NetworkInterfaceId: !Ref PublicNic1
+        - DeviceIndex: '1'
+          NetworkInterfaceId: !Ref PrivateNic1
+      Tags:
+        - Key: 'Name'
+          Value: csr-instance1'
+      UserData: !Base64
+        'Fn::Join':
+          - ""
+          - - "ios-config-1=\"hostname "
+            - !Ref Hostname
+            - "\"\n"
+            - "ios-config-2=\"interface g2\"\n"
+            - "ios-config-3=\"description Inside\"\n"
+            - "ios-config-4=\"ip address dhcp\"\n"
+            - "ios-config-5=\"no shut\"\n"
+            - "ios-config-6=\"service password-encryption\"\n"
+            - "ios-config-8=\"crypto ikev2 proposal AES/GCM/256\"\n"
+            - "ios-config-9=\"encryption aes-gcm-256\"\n"
+            - "ios-config-10=\"prf sha512\"\n"
+            - "ios-config-11=\"group 19\"\n"
+            - "ios-config-12=\"crypto ikev2 policy AES/GCM/256\"\n"
+            - "ios-config-13=\"match fvrf any\"\n"
+            - "ios-config-14=\"proposal AES/GCM/256\"\n"
+            - "ios-config-15=\"crypto ikev2 keyring DMVPN-KEYRING\"\n"
+            - "ios-config-16=\"peer ANY\"\n"
+            - "ios-config-17=\"address <ENTER_PEER_RANGES_HERE>\"\n"
+            - "ios-config-18=\"pre-shared-key <ENTER_PSK_HERE>\"\n"
+            - "ios-config-19=\"crypto ikev2 profile DMVPN-IKEv2-PROFILE\"\n"
+            - "ios-config-20=\"description PSK Profile\"\n"
+            - "ios-config-21=\"match identity remote address <ENTER_REMOTE_PEER_HERE>\"\n"
+            - "ios-config-23=\"authentication remote pre-share\"\n"
+            - "ios-config-24=\"authentication local pre-share\"\n"
+            - "ios-config-25=\"keyring local DMVPN-KEYRING\"\n"
+            - "ios-config-26=\"dpd 40 5 on-demand\"\n"
+            - "ios-config-27=\"crypto ipsec security-association replay window-size 1024\"\n"
+            - "ios-config-28=\"crypto ipsec transform-set AES256/GCM/TRANSFORM esp-gcm 256\"\n"
+            - "ios-config-29=\"mode transport\"\n"
+            - "ios-config-30=\"crypto ipsec profile DMVPN-IPSEC-PROFILE\"\n"
+            - "ios-config-31=\"set transform-set AES256/GCM/TRANSFORM\"\n"
+            - "ios-config-32=\"set ikev2-profile DMVPN-IKEv2-PROFILE\"\n"
+            - "ios-config-33=\"interface Tunnel0\"\n"
+            - "ios-config-34=\"description DMVPN\"\n"
+            - "ios-config-35=\"ip address "
+            - !Ref DmvpnIp
+            - " "
+            - !Ref DmvpnNetmask
+            - "\"\n"
+            - "ios-config-36=\"no ip redirects\"\n"
+            - "ios-config-37=\"ip mtu 1400\"\n"
+            - "ios-config-38=\"ip nhrp authentication <ENTER_NHRP_KEY_HERE>\"\n"
+            - "ios-config-39=\"ip nhrp network-id 100\"\n"
+            - "ios-config-40=\"ip nhrp nhs <ENTER_HUB_TUNNEL_IP_HERE> nbma <ENTER_HUB_PUBLIC_IP_HERE> multicast\"\n"
+            - "ios-config-41=\"ip tcp adjust-mss 1360\"\n"
+            - "ios-config-42=\"ip ospf authentication-key 7 <ENTER_OSPF_AUTH_KEY_HERE>\"\n"
+            - "ios-config-43=\"ip ospf network point-to-multipoint\"\n"
+            - "ios-config-44=\"ip ospf hello-interval 10\"\n"
+            - "ios-config-45=\"tunnel source GigabitEthernet1\"\n"
+            - "ios-config-46=\"tunnel mode gre multipoint\"\n"
+            - "ios-config-47=\"tunnel key 100\"\n"
+            - "ios-config-48=\"tunnel protection ipsec profile DMVPN-IPSEC-PROFILE\"\n"
+            - "ios-config-50=\"router ospf <ENTER_OSPF_PROCESS_ID_HERE>\"\n"
+            - "ios-config-51=\"redistribute static subnets\"\n"
+            - "ios-config-52=\"router-id "
+            - !Ref DmvpnIp
+            - "\"\n"
+            - "ios-config-53=\"network "
+            - !Ref OspfTunnelNetwork
+            - " "
+            - !Ref OspfTunnelWildcard
+            - " area "
+            - !Ref OspfTunnelArea
+            - "\"\n"
+            - "ios-config-54=\"network "
+            - !Ref OspfVpcNetwork
+            - " "
+            - !Ref OspfVpcWildcard
+            - " area "
+            - !Ref OspfVpcArea
+            - "\"\n"
+            - "ios-config-60=\"ip route "
+            - !Select [0, !Split ["/", !Ref PrivateSubnetCidr2 ]]
+            - " "
+            - " 255.255.255.0 "
+            - !Ref PrivateGatewayIP1
+            - "\"\n"
+            - "ios-config-61=\"ip route "
+            - !Select [0, !Split ["/", !Ref PrivateSubnetCidr3 ]]
+            - " "
+            - " 255.255.255.0 "
+            - !Ref PrivateGatewayIP1
+            - "\"\n"
+
+  ElasticIP:
+    Type: 'AWS::EC2::EIP'
+    Properties:
+      Domain: vpc
+
+  ElasticIPAssociation:
+    Type: 'AWS::EC2::EIPAssociation'
+    Properties:
+      NetworkInterfaceId: !Ref PublicNic1
+      AllocationId: !GetAtt ElasticIP.AllocationId
+##
+# Metadata
+##
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: "EC2 Configuration"
+        Parameters:
+          - Hostname
+          - InstanceType
+          - LicenseModel
+          - InboundSSH
+          - KeyName
+      - Label:
+          default: "VPC Configuration"
+        Parameters:
+          - VPC
+          - PublicSubnet1
+          - PublicInterfaceIP1
+          - PrivateSubnet1
+          - PrivateInterfaceIP1
+          - PrivateGatewayIP1
+          - PrivateSubnet2
+          - PrivateSubnet3
+          - PrivateSubnetCidr1
+          - PrivateSubnetCidr2
+          - PrivateSubnetCidr3
+          - PrivateRouteTableId1
+          - PrivateRouteTableId2
+          - PrivateRouteTableId3
+          - OnPremCidr1
+
+      - Label:
+          default: "Cisco IOS Configuration"
+        Parameters:
+          - DmvpnIp
+          - DmvpnNetmask
+          - OspfTunnelNetwork
+          - OspfTunnelWildcard
+          - OspfTunnelArea
+          - OspfVpcNetwork
+          - OspfVpcWildcard
+          - OspfVpcArea
+    ParameterLabels:
+      LicenseModel:
+        default: "License model"
+      InstanceType:
+        default: "Instance type"
+      AvailabilityZone:
+        default: "Availability zone (required)"
+      KeyName:
+        default: "Key pair name"
+      InboundSSH:
+        default: "SSH inbound"
+      PublicSubnet1:
+        default: "Public Subnet ID"
+      PublicInterfaceIP1:
+        default: "Public Interface IP"
+      PrivateSubnet1:
+        default: "Private Subnet 1 ID"
+      PrivateInterfaceIP1:
+        default: "Private Interface 1 IP"
+      PrivateGatewayIP1:
+        default: "Private Subnet 1's Gateway IP"
+      PrivateSubnet2:
+        default: "Private Subnet 2 ID"
+      PrivateSubnet3:
+        default: "Private Subnet 3 ID"
+      PrivateSubnetCidr1:
+        default: "Private Subnet 1 CIDR"
+      PrivateSubnetCidr2:
+        default: "Private Subnet 2 CIDR"
+      PrivateSubnetCidr3:
+        default: "Private Subnet 3 CIDR"
+      PrivateRouteTableId1:
+        default: "Private Route Table 1 ID (rtb)"
+      PrivateRouteTableId2:
+        default: "Private Route Table 2 ID (rtb)"
+      PrivateRouteTableId3:
+        default: "Private Route Table 3 ID (rtb)"
+      OnPremCidr1:
+        default: "On-Premises CCP CIDR"
+      DmvpnIp:
+        default: "DMVPN IP"
+      DmvpnNetmask:
+        default: "DMVPN netmask"
+      OspfTunnelNetwork:
+        default: "OSPF tunnel network"
+      OspfTunnelWildcard:
+        default: "OSPF tunnel wildcard"
+      OspfTunnelArea:
+        default: "OSPF tunnel area"
+      OspfVpcNetwork:
+        default: "OSPF VPC network"
+      OspfVpcWildcard:
+        default: "OSPF VPC wildcard"
+      OspfVpcArea:
+        default: "OSPF VPC area"
+
+##
+# Parameters
+##
+Parameters:
+  # VPC Configuration
+
+  VPC:
+    Description: Search for the VPC ID - This was created by CCP.
+    Type: 'AWS::EC2::VPC::Id'
+
+  PublicSubnet1:
+    Description: Search for the Public Subnet ID - The CSR will attach to this for Internet access
+    Type: AWS::EC2::Subnet::Id
+
+  PublicInterfaceIP1:
+    Description: The IP address to assign to the public network interface on the CSR
+    Type: String
+    MinLength: '7'
+    MaxLength: '15'
+    Default: 172.16.0.10
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})'
+    ConstraintDescription: Must be a valid IP address of the form x.x.x.x
+
+  PrivateSubnet1:
+    Description: Search for the Private Subnet ID - The CSR will attach to this for private VPC access
+    Type: AWS::EC2::Subnet::Id
+
+  PrivateInterfaceIP1:
+    Description: The IP address to assign to the first private network interface on the CSR
+    Type: String
+    MinLength: '7'
+    MaxLength: '15'
+    Default: 172.16.3.10
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})'
+    ConstraintDescription: Must be a valid IP address of the form x.x.x.x
+
+  PrivateGatewayIP1:
+    Description: The IP address of private subnet 1's VPC gateway. This should be the private subnet's CIDR + .1
+    Type: String
+    MinLength: '7'
+    MaxLength: '15'
+    Default: 172.16.3.1
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})'
+    ConstraintDescription: Must be a valid IP address of the form x.x.x.x
+
+  PrivateSubnet2:
+    Description: Search for the Private Subnet 2 ID. This will be used for local route entries on the CSR
+    Type: AWS::EC2::Subnet::Id
+
+  PrivateSubnet3:
+    Description: Search for the Private Subnet 3 ID. This will be used for local route entries on the CSR
+    Type: AWS::EC2::Subnet::Id
+
+  PrivateRouteTableId1:
+    Description: Enter the Private Route Table 1 ID (rtb). This will be used to create route entries for the on-premises CIDR
+    Type: String
+
+  PrivateRouteTableId2:
+    Description: Enter the Private Route Table 2 ID (rtb). This will be used to create route entries for the on-premises CIDR
+    Type: String
+
+  PrivateRouteTableId3:
+    Description: Enter the Private Route Table 3 ID (rtb). This will be used to create route entries for the on-premises CIDR
+    Type: String
+
+  PrivateSubnetCidr1:
+    Description: Enter the Private Subnet 1 CIDR (e.g., 172.16.3.0/24).
+    Type: String
+
+  PrivateSubnetCidr2:
+    Description: Enter the Private Subnet 2 CIDR (e.g., 172.16.4.0/24).
+    Type: String
+
+  PrivateSubnetCidr3:
+    Description: Enter the Private Subnet 3 CIDR (e.g., 172.16.5.0/24).
+    Type: String
+
+  OnPremCidr1:
+    Description: Enter the on-premises CIDR range that will used to connect to CCP nodes
+    Type: String
+    MinLength: '7'
+    MaxLength: '15'
+    Default: <ENTER_ENTERPRISE_CIDR_HERE>
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
+    ConstraintDescription: Must be a valid IP address of the form x.x.x.x
+
+  # EC2 Configuration
+  Hostname:
+    Description: The hostname of the CSR 1000V instance
+    Type: String
+    Default: multicloud-csr-01
+
+  LicenseModel:
+    Description: >-
+      Choose between a Bring Your Own License (BYOL) or License Included
+      model. Remember to first subscribe to the appropriate Marketplace AMI!
+    Type: String
+    Default: BYOL
+    AllowedValues:
+      - BYOL
+      - Included
+
+  InstanceType:
+    Description: The EC2 instance type to use for the CSR 1000V
+    Type: String
+    Default: t2.medium
+    AllowedValues:
+      - t2.medium
+      - m3.medium
+      - c3.xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
+      - c4.4xlarge
+      - c4.8xlarge
+    ConstraintDescription: Must be a supported EC2 instance type for the CSR 1000V
+
+  KeyName:
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Description: Search for the key pair name used to enable SSH access to the instance
+    Default: multicloud_rsa
+
+  InboundSSH:
+    Description: The IP address range that is allowed to access the CSR instance via SSH
+    Type: String
+    MinLength: '9'
+    MaxLength: '18'
+    Default: 0.0.0.0/0
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
+    ConstraintDescription: Must be a valid IP CIDR range of the form x.x.x.x/x.
+
+  # Cisco IOS Configuration
+  DmvpnIp:
+    Description: The IP address to assign to the DMVPN endpoint
+    Type: String
+    MinLength: '7'
+    MaxLength: '15'
+    Default: 10.250.0.9
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})'
+    ConstraintDescription: Must be a valid IP address of the form x.x.x.x
+
+  DmvpnNetmask:
+    Description: The netmask for the DMVPN IP address
+    Type: String
+    MinLength: '7'
+    MaxLength: '15'
+    Default: 255.255.255.0
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})'
+    ConstraintDescription: Must be a valid netmask of the form x.x.x.x
+
+  OspfTunnelNetwork:
+    Description: The OSPF tunnel network
+    Type: String
+    MinLength: '7'
+    MaxLength: '15'
+    Default: 10.250.0.0
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})'
+    ConstraintDescription: Must be a valid network address of the form x.x.x.x
+
+  OspfTunnelWildcard:
+    Description: The wildcard for the OSPF tunnel network
+    Type: String
+    MinLength: '7'
+    MaxLength: '15'
+    Default: 0.0.0.255
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})'
+    ConstraintDescription: Must be a valid wildcard of the form x.x.x.x
+
+  OspfTunnelArea:
+    Description: The area for the OSPF tunnel network
+    Type: Number
+    Default: 0
+    ConstraintDescription: Must be a number
+
+  OspfVpcNetwork:
+    Description: The OSPF VPC network
+    Type: String
+    MinLength: '7'
+    MaxLength: '15'
+    Default: 172.16.3.0
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})'
+    ConstraintDescription: Must be a valid network address of the form x.x.x.x
+
+  OspfVpcWildcard:
+    Description: The wildcard for the OSPF VPC network
+    Type: String
+    MinLength: '7'
+    MaxLength: '15'
+    Default: 0.0.0.255
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})'
+    ConstraintDescription: Must be a valid wildcard of the form x.x.x.x
+
+  OspfVpcArea:
+    Description: The area for the OSPF VPC network
+    Type: Number
+    Default: 2
+    ConstraintDescription: Must be a number
+
+##
+# Mappings
+##
+Mappings:
+  CiscoCsrAMI:
+    us-east-1:
+      BYOL: ami-bcbfb9c7
+      Included: ami-46b1b73d
+    us-east-2:
+      BYOL: ami-8f1536ea
+      Included: ami-b61437d3
+    us-west-1:
+      BYOL: ami-99e5d0f9
+      Included: ami-c5facfa5
+    us-west-2:
+      BYOL: ami-e4d43d9c
+      Included: ami-29d33a51
