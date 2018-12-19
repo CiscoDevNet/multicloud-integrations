@@ -1,7 +1,7 @@
 
 # MultiCloud Integration - AWS
 
-This repository contains engineering document efforts for the AWS MultiCloud integration solution.
+This repository contains engineering notes for the *AWS* MultiCloud integration solution.
 
 * Pre-requisites
   * AWS account with following credentials for the account:
@@ -15,7 +15,7 @@ This repository contains engineering document efforts for the AWS MultiCloud int
   * Common Identity management for on-prem and AWS kubernetes clusters using AWS IAM.
   
 * [Configuration of On-prem servers](./OnPremConfig/README.md)
-  * Installation and configuration instructions for Cisco ACI, APIC, Hyperflex, ESXi, HX Installer and ASR 1001
+  * Installation and configuration instructions for Cisco ACI, APIC, Hyperflex, ESXi, HX Installer and ASR 1001.  Not all components will be used in every installation.
   
 * [Configuration on Public Cloud - AWS](./AWSConfig/README.md)
   * A list of Hybrid Networking solutions Cisco has to offer to connect AWS and on-premise servers.
@@ -24,4 +24,4 @@ This repository contains engineering document efforts for the AWS MultiCloud int
   * Integeration of ECR access through on-prem Kubernetes Clusters.
   
 * [Cisco Container Platform](./External/ccp.md) 
-  * Instructions to install the Cisco Container Platform and steps to setup a k8s  Cluster to get started.
+  * Instructions to install the Cisco Container Platform and steps to setup a Kubernetes Cluster to get started.

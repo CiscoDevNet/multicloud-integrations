@@ -1,20 +1,12 @@
 # Introduction
-[aws-iam-authenticator](https://github.com/kubernetes-sigs/aws-iam-authenticator) is a utility that enables the use of AWS IAM identities/principals for authentication to Kubernetes clusters. By default, it is used by EKS to enable Kubernetes authentication via IAM and is harnessed by CCP (Cisco Container Platform) to establish a consistent, unified identity scheme across both on-premise and AWS EKS clusters.
+[aws-iam-authenticator](https://github.com/kubernetes-sigs/aws-iam-authenticator) is a utility that enables the use of AWS IAM identities/principals for authentication to Kubernetes clusters. By default, it is used by EKS to enable Kubernetes authentication via IAM and it is harnessed by CCP (Cisco Container Platform) to establish a consistent, unified identity scheme across both on-premise and AWS EKS clusters.
 
-
-
-As outlined [here](https://github.com/kubernetes-sigs/aws-iam-authenticator)
-
+As outlined [here]:(https://github.com/kubernetes-sigs/aws-iam-authenticator)
 "If you are an administrator running a Kubernetes cluster on AWS, you already need to manage AWS IAM credentials to provision and update the cluster. By using AWS IAM Authenticator for Kubernetes, you avoid having to manage a separate credential for Kubernetes access. AWS IAM also provides a number of nice properties such as an out of band audit trail (via CloudTrail) and 2FA/MFA enforcement."
 
-
-
-*aws-iam-authenticator* fulfils both a client and server function. On the client side, the authenticator's job is to generate, tokenise and transmit a pre-signed URL to the server-side for identity validation. The client is a Go binary, installed on your workstation, which is transparently invoked by kubectl each time you interact with your Kubernetes cluster. The 'server-side' is a containerised instance of aws-iam-authenticator running as a DaemonSet on the Kubernetes master nodes. This interacts with the AWS STS (Secure Token Service) to perform identity validation. CCP takes care of the initial server-side configuration as well as providing a pre-configured Kubeconfig file for admin users to download. Users simply need to ensure that the 'aws-iam-authenticator' is available within their $PATH while using kubectl to interact with clusters in the usual way. Installation instructions can be found here.
-
-
+*aws-iam-authenticator* fulfills both a client and server function. On the client side, the authenticator's job is to generate, tokenise and transmit a pre-signed URL to the server-side for identity validation. The client is a Go binary, installed on your workstation, which is transparently invoked by kubectl each time you interact with your Kubernetes cluster. The 'server-side' is a containerised instance of aws-iam-authenticator running as a DaemonSet on the Kubernetes master nodes. This interacts with the AWS STS (Secure Token Service) to perform identity validation. CCP takes care of the initial server-side configuration as well as providing a pre-configured Kubeconfig file for admin users to download. Users simply need to ensure that the 'aws-iam-authenticator' is available within their $PATH while using kubectl to interact with clusters in the usual way. Installation instructions can be found here.
 
 This post will outline how the authenticator interacts with AWS and maps IAM Roles to Kubernetes groups on both on-premise and EKS clusters. Implementation details concerning the initial setup, configuration, RBAC policy creation and basic validation will also be detailed.
-
 
 Note: aws-iam-authenticator supports two additional authentication options: mapping individual **users** (e.g. arn:aws:iam::01234567890:user/Bob) and entire **AWS accounts** (e.g. 01234567890 ) to RBAC users. This post will focus on mapping **IAM roles** to Kubernetes groups.
 
@@ -22,8 +14,6 @@ For a walk-through of the various interactions between *aws-iam-authenticator* a
 
 # AWS IAM Roles
 Before going any further, let's ensure we have IAM roles configured in our AWS account. Note: other than a trust policy, these IAM roles do not require that any AWS policies/permissions are attached! They will be used purely to map external users to Kubernetes RBAC policies. Enterprise admins may have provisioned individual 'local' IAM users or may already be federating users from an existing Identity Provider via LDAP, ADFS, SAML or OIDC.
-
-
 
 The example below shows two local IAM users, each of whom are members of a different IAM group. Each IAM group contains a simple IAM policy permitting its members to assume either the *k8s-dev-role* or *k8s-admin-role*. In this context, we can think of IAM roles as 'hats'. If I have been granted permission to assume the *k8s-admin-role* then I can wear the **admin** 'hat'. If I've also been granted permission to assume *k8s-dev-role* then I can wear the developer 'hat'. The trust policy, attached to the IAM role itself, could also be used to govern which users are permitted to assume the role. This trust policy could also be configured with additional conditions to e.g. permit cross-account access from 3rd party users, enforce MFA, restrict access based on source IP ranges and so on.
 
