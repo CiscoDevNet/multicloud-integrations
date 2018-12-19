@@ -1,0 +1,90 @@
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: ecr-cred-updater
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "create", "delete"]
+- apiGroups: [""]
+  resources: ["serviceaccounts"]
+  verbs: ["get", "patch"]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ecr-cred-updater
+
+
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: ecr-cred-updater
+subjects:
+  - kind: ServiceAccount
+    name: ecr-cred-updater
+roleRef:
+  kind: Role
+  name: ecr-cred-updater
+  apiGroup: rbac.authorization.k8s.io
+---
+
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: ecr-cred-updater
+spec:
+  schedule: "* */8 * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      backoffLimit: 4
+      template:
+        spec:
+          serviceAccountName: ecr-cred-updater
+          terminationGracePeriodSeconds: 0
+          restartPolicy: Never
+          containers:
+          - name: kubectl
+            image: ciscomulticloud/aws-kubectl
+            env:
+              - name: AWS_ACCESS_KEY_ID
+                valueFrom:
+                  secretKeyRef:
+                    name: aws-account-creds
+                    key: AWS_ACCESS_KEY_ID
+              - name: AWS_SECRET_ACCESS_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: aws-account-creds
+                    key: AWS_SECRET_ACCESS_KEY
+              - name: AWS_REGION
+                valueFrom:
+                  secretKeyRef:
+                    name: aws-account-creds
+                    key: aws-region
+              - name: AWS_ACCOUNT
+                valueFrom:
+                  secretKeyRef:
+                    name: aws-account-creds
+                    key: aws-account
+            command:
+            - "/bin/sh"
+            - "-c"
+            - |
+              #AWS_ACCOUNT=<AWS_ACCOUNT_ID>
+              #export AWS_ACCESS_KEY_ID=<KEY_ID>
+              #export AWS_SECRET_ACCESS_KEY=<ACCESS_KEY>
+              #export AWS_REGION=us-west-2
+              DOCKER_REGISTRY_SERVER=https://${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com
+              DOCKER_USER=AWS
+              DOCKER_PASSWORD=`aws ecr get-login --region ${AWS_REGION} --registry-ids ${AWS_ACCOUNT} | cut -d' ' -f6`
+              kubectl delete secret aws-registry || true
+              kubectl create secret docker-registry aws-registry \
+              --docker-server=$DOCKER_REGISTRY_SERVER \
+              --docker-username=$DOCKER_USER \
+              --docker-password=$DOCKER_PASSWORD \
+              --docker-email=no@email.local
+              kubectl patch serviceaccount default -p '{"imagePullSecrets":[{"name":"aws-registry"}]}'

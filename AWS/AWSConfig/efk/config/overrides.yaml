@@ -1,0 +1,88 @@
+kibana:
+  env:
+    ELASTICSEARCH_URL: http://elasticsearch-logging.default.svc.cluster.local:9200
+  image:
+    repository: docker.elastic.co/kibana/kibana
+    tag: 6.4.2
+  service:
+    externalPort: 5601
+
+elasticsearch:
+  image:
+    repository: docker.elastic.co/elasticsearch/elasticsearch
+    tag: 6.4.2
+  init:
+    image:
+      repository: alpine
+      tag: 3.7
+
+# Values of host and port will be overridden by user parameteres.
+# If you want to send logs of tenant cluster to specific es_server,
+# you will need to overwite these two values which are used in
+# build/helm/ccp-efk/templates/fluentd-es-configmap.yaml
+localLogForwarding:
+  elasticsearchHost: elasticsearch-logging
+  elasticsearchPort: 9200
+  enabled: True
+
+fluentd:
+  image:
+    repository: gcr.io/google-containers/fluentd-elasticsearch
+    tag: v2.0.2
+
+elasticsearch-curator:
+  image:
+    repository: quay.io/pires/docker-elasticsearch-curator
+    tag: 5.5.4
+    pullPolicy: IfNotPresent
+
+  config:
+    elasticsearch:
+      hosts:
+        - elasticsearch-logging
+      port: 9200
+
+  cronjob:
+# Runs everyday at 1:00
+    schedule: "0 1 * * *"
+    annotations: {}
+    concurrencyPolicy: ""
+    failedJobsHistoryLimit: ""
+    successfulJobsHistoryLimit: ""
+
+  pod:
+    annotations: {}
+
+  configMaps:
+# Delete indices older than  10 days
+# We can change the unit and unit_count which decides the age of the indices that are to be deleted
+    action_file_yml: |-
+      ---
+      actions:
+        1:
+          action: delete_indices
+          description: "Clean up ES by deleting old indices"
+          options:
+            timeout_override:
+            continue_if_exception: False
+            disable_action: False
+            ignore_empty_list: True
+          filters:
+          - filtertype: age
+            source: name
+            direction: older
+            timestring: '%Y.%m.%d.'
+            unit: days
+            unit_count: 10
+            field:
+            stats_result:
+            epoch:
+            exclude: False
+# Having config_yaml WILL override the other config
+    config_yml: |-
+      ---
+      client:
+        hosts:
+          - elasticsearch-logging
+        port: 9200
+

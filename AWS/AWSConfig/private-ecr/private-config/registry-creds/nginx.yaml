@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: <AWS_ACCOUNT_ID>.dkr.ecr.us-west-2.amazonaws.com/ccp-repo/nginx
+        ports:
+        - containerPort: 80
+        imagePullPolicy: Always
+      #imagePullSecrets:
+      #  - name: aws-registry
