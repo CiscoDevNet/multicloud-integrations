@@ -1,0 +1,21 @@
+# Note: this config snippet is to highlight how an individual user can be mapped to a K8s group using 
+#'mapUsers' in the aws-auth configMap
+apiVersion: v1
+data:
+  config.yaml: |
+    # a unique-per-cluster identifier to prevent replay attacks
+    # (good choices are a random token or a domain name that will be unique to your cluster)
+    clusterID: my-k8s-cluster
+    server:
+      # each mapRoles entry maps an IAM role to a username and set of groups
+      # Each username and group can optionally contain template parameters:
+      #  1) "{{AccountID}}" is the 12 digit AWS ID.
+      #  2) "{{SessionName}}" is the role session name.
+     
+      # each mapUsers entry maps an IAM role to a static username and set of groups
+      mapUsers:
+      # map user IAM user Alice in 000000000000 to user "alice" in "system:masters"
+      - userARN: ${__AWS_IAM_USER_ARN__}
+        username: aws
+        groups:
+        - system:masters

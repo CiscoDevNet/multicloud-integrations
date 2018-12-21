@@ -4,11 +4,13 @@
 As outlined [here]:(https://github.com/kubernetes-sigs/aws-iam-authenticator)
 "If you are an administrator running a Kubernetes cluster on AWS, you already need to manage AWS IAM credentials to provision and update the cluster. By using AWS IAM Authenticator for Kubernetes, you avoid having to manage a separate credential for Kubernetes access. AWS IAM also provides a number of nice properties such as an out of band audit trail (via CloudTrail) and 2FA/MFA enforcement."
 
+Information on the use of MFA can be found [here](mfa-iam.md). Details on how to audit user authentications using CloudTrail can be found [here](audit-cloudtrail.md)
+
 *aws-iam-authenticator* fulfills both a client and server function. On the client side, the authenticator's job is to generate, tokenise and transmit a pre-signed URL to the server-side for identity validation. The client is a Go binary, installed on your workstation, which is transparently invoked by kubectl each time you interact with your Kubernetes cluster. The 'server-side' is a containerised instance of aws-iam-authenticator running as a DaemonSet on the Kubernetes master nodes. This interacts with the AWS STS (Secure Token Service) to perform identity validation. CCP takes care of the initial server-side configuration as well as providing a pre-configured Kubeconfig file for admin users to download. Users simply need to ensure that the 'aws-iam-authenticator' is available within their $PATH while using kubectl to interact with clusters in the usual way. Installation instructions can be found here.
 
 This post will outline how the authenticator interacts with AWS and maps IAM Roles to Kubernetes groups on both on-premise and EKS clusters. Implementation details concerning the initial setup, configuration, RBAC policy creation and basic validation will also be detailed.
 
-Note: aws-iam-authenticator supports two additional authentication options: mapping individual **users** (e.g. arn:aws:iam::01234567890:user/Bob) and entire **AWS accounts** (e.g. 01234567890 ) to RBAC users. This post will focus on mapping **IAM roles** to Kubernetes groups.
+Note: aws-iam-authenticator supports two additional authentication options: mapping individual **users** (e.g. arn:aws:iam::01234567890:user/Bob) and entire **AWS accounts** (e.g. 01234567890 ) to RBAC users. This post will focus on mapping **IAM roles** to Kubernetes groups. A sample config showing a userArn and Account mapping can be found [here](user-arn-mapping.yaml)
 
 For a walk-through of the various interactions between *aws-iam-authenticator* and AWS IAM/STS, please view [this](iam-under-the-hood.md)
 
