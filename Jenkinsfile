@@ -18,9 +18,11 @@ pipeline{
                 sh'''
                 EXIT_CODE=$(git diff --exit-code published working)
                 '''
-                if($EXIT_CODE == 0){
-                    currentBuild.result = 'SUCCESS'
-                    return
+                script {
+                    if($EXIT_CODE == 0){
+                        currentBuild.result = 'SUCCESS'
+                        return
+                    }
                 }
             }
         }
