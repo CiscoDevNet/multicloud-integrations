@@ -19,9 +19,13 @@ pipeline{
                 EXIT_CODE=$?
                 '''
                 script {
-                    if($EXIT_CODE == 0){
+                    echo "$EXIT_CODE"
+                    if ($EXIT_CODE == 0) {
                         currentBuild.result = 'SUCCESS'
+                        echo 'No diffs in the branches skipping rest of the pipeline'
                         return
+                    } else {
+                        echo 'Continuing next stages'
                     }
                 }
             }
