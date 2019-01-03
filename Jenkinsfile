@@ -1,5 +1,5 @@
 #!groovy
-#! Merging private/working branch and private/published branch and push private/pubslihed to public/pubished branch.
+//Merging private/working branch and private/published branch and push private/pubslihed to public/pubished branch.
 pipeline{
     agent any
 
