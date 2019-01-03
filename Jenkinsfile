@@ -5,29 +5,35 @@ pipeline{
 
     stages {
         stage ('Setup SCM') {
-            sh'''
-                git fetch --all
-                git checkout published
-                git checkout working
-            '''
+            steps {
+                sh'''
+                    git fetch --all
+                    git checkout published
+                    git checkout working
+                '''
+            }
         }
         stage('Check if the branches have any difference') {
-            sh'''
+            steps{
+                sh'''
                 EXIT_CODE=$(git diff --exit-code published working)
-            '''
-            if($EXIT_CODE == 0){
-                currentBuild.result = 'SUCCESS'
-                return
+                '''
+                if($EXIT_CODE == 0){
+                    currentBuild.result = 'SUCCESS'
+                    return
+                }
             }
         }
         stage('Merge working and published branch') {
-            sh'''
-                git branch
-                git merge published
-                git checkout published
-                git commit -m "auto-merging from working branch with build id ${BUILD_NUMBER}"
-                git push origin published
-            '''
+            steps{
+                sh'''
+                    git branch
+                    git merge published
+                    git checkout published
+                    git commit -m "auto-merging from working branch with build id ${BUILD_NUMBER}"
+                    git push origin published
+                '''
+            }
         }
     }
 }
