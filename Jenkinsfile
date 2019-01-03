@@ -33,10 +33,10 @@ pipeline{
         stage('Merge working and published branch') {
             steps{
                 sh'''
-                    git branch
-                    git merge published
                     git checkout published
-                    git commit -m "auto-merging from working branch with build id ${BUILD_NUMBER}"
+                    git branch
+                    git merge working
+                    git status
                     git push origin published
                 '''
             }
