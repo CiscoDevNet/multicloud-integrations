@@ -15,7 +15,8 @@ pipeline{
         stage('Check if the branches have any difference') {
             steps{
                 sh'''
-                EXIT_CODE=$(git diff --exit-code published working)
+                git diff --exit-code published working
+                EXIT_CODE=$?
                 '''
                 script {
                     if($EXIT_CODE == 0){
