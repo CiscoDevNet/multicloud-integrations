@@ -7,7 +7,6 @@ pipeline{
         stage ('Setup SCM') {
             steps {
                 sh'''
-                    git fetch --all
                     git checkout published
                     git checkout working
                 '''
