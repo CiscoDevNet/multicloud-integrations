@@ -36,13 +36,16 @@ pipeline{
         }*/
         stage('Merge working and published branch') {
             steps{
-                sh'''
-                    git checkout published
-                    git branch
-                    git merge working
-                    git status
-                    git push origin published
-                '''
+                sshagent(['github-engit-ci-ciscolabs-gen-key']) {
+                    sh'''
+                        git checkout published
+                        git branch
+                        git merge working
+                        git status
+                        git push origin published
+                    '''
+                }
+                
             }
         }
     }
