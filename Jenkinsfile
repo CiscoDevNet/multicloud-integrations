@@ -6,10 +6,14 @@ pipeline{
     stages {
         stage ('Setup SCM') {
             steps {
-                sh'''
-                    git checkout published
-                    git checkout working
-                '''
+                sshagent(['github-engit-ci-ciscolabs-gen-key']) {
+                    sh'''
+                        git clone git@wwwin-github.cisco.com:CPSG/mci-docs.git
+                        git checkout published
+                        git checkout working
+                    '''
+                }
+                
             }
         }
 /*        stage('Check if the branches have any difference') {
