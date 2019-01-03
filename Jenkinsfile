@@ -12,7 +12,7 @@ pipeline{
                 '''
             }
         }
-        stage('Check if the branches have any difference') {
+/*        stage('Check if the branches have any difference') {
             steps{
                 sh'''
                 git diff --exit-code published working
@@ -29,7 +29,7 @@ pipeline{
                     }
                 }
             }
-        }
+        }*/
         stage('Merge working and published branch') {
             steps{
                 sh'''
