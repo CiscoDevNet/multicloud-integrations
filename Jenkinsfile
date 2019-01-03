@@ -29,5 +29,15 @@ pipeline{
                 
             }
         }
+        stage('Push the changes from internal to public github') {
+            steps{
+                sshagent(['mci-docs-github-key']){
+                    sh'''
+                        git remote add public git@github.com:CiscoDevNet/multicloud-integrations.git
+                        git push -u public published
+                    '''
+                }
+            }
+        }
     }
 }
