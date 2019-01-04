@@ -33,8 +33,8 @@ pipeline{
             steps{
                 sshagent(['mci-docs-github-key']){
                     sh'''
+                        git checkout -b published origin/published
                         git remote add public git@github.com:CiscoDevNet/multicloud-integrations.git
-                        git fetch public
                         git push -u public published
                     '''
                 }
