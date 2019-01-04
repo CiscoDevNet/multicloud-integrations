@@ -34,6 +34,7 @@ pipeline{
                 sshagent(['mci-docs-github-key']){
                     sh'''
                         git remote add public git@github.com:CiscoDevNet/multicloud-integrations.git
+                        git fetch public
                         git push -u public published
                     '''
                 }
