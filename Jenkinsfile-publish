@@ -1,7 +1,7 @@
 #!groovy
 //Merging private/working branch and private/published branch and push private/pubslihed to public/pubished branch.
 pipeline{
-    agent any
+    agent { label 'ci-runner' }
 
     stages {
         stage ('Setup SCM') {
