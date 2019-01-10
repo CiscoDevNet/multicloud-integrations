@@ -16,7 +16,7 @@ Topics covered:
 
 Note: The remaining components of the solution (AppDynamics, Cisco Stealthwatch Cloud, Cisco CloudCenter, Cisco HyperFlex/Cisco UCS and Cisco Nexus) are not covered in this documentation
 
-![cisco-hybrid-aws](/aws/images/cisco-hybrid-aws.png)
+![cisco-hybrid-aws](/AWS/images/cisco-hybrid-aws.png)
 
 
 * Pre-requisites
