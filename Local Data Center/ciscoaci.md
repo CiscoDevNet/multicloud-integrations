@@ -12,6 +12,4 @@
   
 * The [HyperFlex ACI configuration](https://www.cisco.com/c/en/us/products/collateral/hyperconverged-infrastructure/hyperflex-hx-series/whitepaper_c11-738327.html) white paper walks through the setup of Common Tenant Constructs - to configure the tenant's Networks, bridge, ARP, Routing, Contracts, Node Profiles. A step-by-step guide for the Basic User Tenant configuration using APIC can found [here](https://www.cisco.com/c/en/us/td/docs/switches/datacenter/aci/apic/sw/3-x/basic_config/b_APIC_Basic_Config_Guide_3_x/b_APIC_Basic_Config_Guide_3_x_chapter_0101.html). 
   
-* Foundation Tenant Constructs - to configure Bridge Domain, Application Profiles. (Page 50 - 52)
-  
-* VMM Integration - To configure the Virtual Networking for VMware vCenter Domain. More detailed information can be found [here](https://www.cisco.com/c/en/us/td/docs/switches/datacenter/aci/apic/sw/3-x/virtualization/b_ACI_Virtualization_Guide_3_1_1/b_ACI_Virtualization_Guide_3_1_1_chapter_011.html) 
+* VMM Integration - To configure the Virtual Networking for VMware vCenter Domain. More detailed information can be found [here](https://www.cisco.com/c/en/us/td/docs/switches/datacenter/aci/apic/sw/3-x/virtualization/b_ACI_Virtualization_Guide_3_1_1/b_ACI_Virtualization_Guide_3_1_1_chapter_011.html)

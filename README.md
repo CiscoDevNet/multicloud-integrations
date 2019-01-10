@@ -1,12 +1,12 @@
 
-# MultiCloud Integration
+# Multicloud Integration
 
-This repository contains engineering notes for the implemenation and use of Cisco MultiCloud integration solutions.  
+This repository contains engineering documentation covering components of the Cisco Multicloud integeration solutions.
 
 To date, Cisco has announced partnerships with several cloud providers, and over time you can expect to find notes specific to each here.
 
 * [Amazon Web Services](./AWS/README.md)
 
-If there is content that you would like to see, please tell us by creating a [Github Issue on this repository](./issues)
+## Contributing
 
-  
+We welcome your contributions towards this document and to make things easy please follow the [Contribution guidelines](.github/CONTRIBUTING.md). The guidelines contains the process to suggest any new integrations that you would like to see or if you find any bug that you want to report.

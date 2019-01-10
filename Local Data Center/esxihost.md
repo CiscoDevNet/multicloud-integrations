@@ -4,4 +4,4 @@
   
 * Install ESXi 6.0 on the host. You can refer the [Cisco FlexFlash](https://www.cisco.com/c/dam/en/us/solutions/collateral/data-center-virtualization/unified-computing/whitepaper_C11-718938.pdf) whitepaper to install on SD Card or install on the Virtual Disk created above.
   
-* Install vCenter 6.0 to manage the HX Cluster. Install the vSphere Client which will allow to deploy the HX Installer OVA. `Still not sure about this step`
+* Install vCenter 6.0 to manage the HX Cluster. Install the vSphere Client which will allow to deploy the HX Installer OVA.

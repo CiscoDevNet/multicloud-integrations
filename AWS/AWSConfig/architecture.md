@@ -1,9 +1,7 @@
-# High Level Diagram
+# High Level Architecture
 
-![](/aws/images/Solution_Architecture.png)
+Cisco Container Platoform (CCP) is used to provision Kubernetes clusters on on-premises virtualized infrastructure and on AWS EKS. CCP provides the option of deploying AWS IAM authentication plugin on on-premise clusters which allows the AWS registered users to access the Kubernetes cluster using the AWS IAM credentials.
 
-From the above diagram, CCP can be used to provision Kubernetes clusters on on-premises virtualized infrastructure (VMware, today) and on AWS using EKS. CCP provides the option of deploying AWS IAM authentication plugin on on-premise clusters which allows the AWS registered users to access the Kubernetes cluster using the AWS IAM credentials.
+With Cisco Hybrid Solution for Kubernetes on AWS, customers use the CCP UI to launch Kubernetes clusters in Amazon AWS in addition to on-premises environments. They simply declare their Kubernetes cluster specification and reference the cisco managed operating system images for the worker node images to deploy clusters in either environment. AWS Identity and Access Management (IAM) is integrated as common authentication mechanism, so that the cluster administrator is free to apply the same role-based access control (RBAC) policies across both environments. Both environments are integrated with Amazon Elastic Container Registry (ECR), providing a secure, single repository for all the container images. A standard set of Open Source monitoring and logging tools based on Prometheus and ElasticSearch/FluentD/Kibana (EFK) stack is deployed to the clusters to provide consistent logging and metrics. Finally, Cisco’s site-to-site VPN solutions, such as CSR 1000v are leveraged to provide a range of secure connectivity options between the cloud-hosted and on-premises services.
 
-# AWS - IAM authentication integration
-
-The AWS IAM credentials are used to authenticate to the Kubernetes cluster. To enable this, the solution uses `aws-iam-authenticator` utilty to which helps in maintaining a single mode of authentication to manage the on-prem Kubernetes cluster as well as the AWS EKS Cluster. More details on the implementation can be found [here](/aws/AWSConfig/README.md).
+![solution-architecture](/AWS/images/Solution_Architecture.png)

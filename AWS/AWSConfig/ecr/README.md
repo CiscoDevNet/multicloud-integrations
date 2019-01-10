@@ -14,7 +14,7 @@ Kubernetes offers [native](https://kubernetes.io/docs/concepts/containers/images
 
 For EKS clusters, CCP will automatically grant the worker nodes the appropriate ECR read-only privileges via an Instance Profile containing the *AmazonEC2ContainerRegistryReadOnly* AWS Managed Policy:
 
-![](../../images/iam-ecr-policy.png)
+![](/AWS/images/iam-ecr-policy.png)
 
 Kubernetes clusters hosted on non-AWS infrastructure cannot be assigned IAM instance profiles. Furthermore, unlike e.g. hub.docker.com, ECR does not support the notion of serving 'public' container images. While ECR makes it possible for images to be accessed by other AWS accounts/users/roles, this must be explicitly configured via IAM and requires both an ECR and Docker login step before access to an image/repo is granted. Due to a 12 hour expiry timer on the returned Docker token, this must be repeated every 12 hours. As such, it is currently not possible to access an ECR repo without, at least initially, interacting with IAM.
 
