@@ -12,4 +12,3 @@ The on-prem servers is comprised of various components. These components may dif
 * [Infrastructure ESXi Host](./esxihost.md)
 
 * [HX Installer](./hxinstaller.md)
-    

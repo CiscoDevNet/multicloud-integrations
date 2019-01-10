@@ -1,7 +1,23 @@
 
-# MultiCloud Integration - AWS
+# Cisco hybrid integration with AWS
 
-This repository contains engineering notes for the *AWS* MultiCloud integration solution.
+This repository contains engineering documentation covering components of the **Cisco Hybrid Solution for Kubernetes on AWS**.
+
+Topics covered:
+
+* Integration between the Cisco Container Platform (CCP) and AWS’s Elastic Container Service for Kubernetes (EKS), leveraging AWS’s Identity And Access Management (IAM)
+
+* Access to AWS’s Elastic Container Registry (ECR)
+  
+* Networking deployment options
+  
+* Deployment instructions for EKF (ElasticSearch, FluentD, Kibana)
+
+
+Note: The remaining components of the solution (AppDynamics, Cisco Stealthwatch Cloud, Cisco CloudCenter, Cisco HyperFlex/Cisco UCS and Cisco Nexus) are not covered in this documentation
+
+![cisco-hybrid-aws](/aws/images/cisco-hybrid-aws.png)
+
 
 * Pre-requisites
   * AWS account with following credentials for the account:
@@ -12,16 +28,13 @@ This repository contains engineering notes for the *AWS* MultiCloud integration 
   
 * [Architecture](./AWSConfig/architecture.md)
   * High Level Diagram and other design documents
-  * Common Identity management for on-prem and AWS kubernetes clusters using AWS IAM.
-  
-* [Configuration of On-prem servers](./OnPremConfig/README.md)
-  * Installation and configuration instructions for Cisco ACI, APIC, Hyperflex, ESXi, HX Installer and ASR 1001.  Not all components will be used in every installation.
   
 * [Configuration on Public Cloud - AWS](./AWSConfig/README.md)
-  * A list of Hybrid Networking solutions Cisco has to offer to connect AWS and on-premise servers.
-  * Shared AMI by Cisco - Request access [here](https://www.cisco.com/c/en/us/td/docs/net_mgmt/cisco_container_platform/2-2/User_Guide/CCP-User-Guide-2-2-0/CCP-User-Guide-2-2-0_chapter_01010.html#id_92768)
-  * Integration of CCP and EKS
+  * AWS IAM Common Identity configuration to access on-prem and EKS clusters.
   * Integeration of ECR access through on-prem Kubernetes Clusters.
+  * A list of Hybrid Networking solutions Cisco has to offer to connect AWS and on-premise servers.
+  * EFK Installation on EKS.
+  * Shared AMI by Cisco - Request access [here](https://www.cisco.com/c/en/us/td/docs/net_mgmt/cisco_container_platform/2-2/User_Guide/CCP-User-Guide-2-2-0/CCP-User-Guide-2-2-0_chapter_01010.html#id_92768)
   
 * [Cisco Container Platform](./External/ccp.md) 
   * Instructions to install the Cisco Container Platform and steps to setup a Kubernetes Cluster to get started.

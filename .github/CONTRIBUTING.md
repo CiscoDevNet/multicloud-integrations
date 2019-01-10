@@ -1,4 +1,4 @@
-# Cisco Multi-Cloud Integration Solution Document
+# Cisco Multicloud Integration Solution Document
 
 ## Contributing
 
