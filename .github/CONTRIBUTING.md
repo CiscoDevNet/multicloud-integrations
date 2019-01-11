@@ -22,7 +22,7 @@ You can make changes to any of the document in the repo directly from the GitHub
 
 Make sure you are on `master` branch, navigate to the file you want to edit, click the **Pencil** icon on the top right corner of the document. This will create a fork of this repo under your user account and will open the file in *Edit* mode. Make your edits and save the changes by clicking on **Commit changes** button. We recommend adding a summary of the changes in the text box provided.
 
-If you have changes in multiple files, make those changes and commit the changes. Once all the changes are made, open a **Pull Request** against this repo. Please provide details on the changes submitted in the Pull Request. The more detailed the description the easier it will be for us to review your request.[Check here how to open a Pull Request](https://help.github.com/articles/creating-a-pull-request-from-a-fork/).
+If you have changes in multiple files, make those changes and commit the changes. Once all the changes are made, open a **Pull Request** against this repo. Please provide details on the changes submitted in the Pull Request. The more detailed the description the easier it will be for us to review your request. [Check here how to open a Pull Request](https://help.github.com/articles/creating-a-pull-request-from-a-fork/).
 
 To help us review and work on your changes quickly, please follow these guidelines when creating the Pull Request:
 
