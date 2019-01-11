@@ -9,4 +9,4 @@ To date, Cisco has announced partnerships with several cloud providers, and over
 
 ## Contributing
 
-We welcome your contributions towards this document and to make things easy please follow the [Contribution guidelines](.github/CONTRIBUTING.md). The guidelines contains the process to suggest any new integrations that you would like to see or if you find any bug that you want to report.
+We welcome your contributions towards this document. To make things easy, please follow the [Contribution guidelines](.github/CONTRIBUTING.md). The guidelines contain the process to follow to suggest new integrations you would like to see or to report a bug that you find.
