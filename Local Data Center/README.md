@@ -1,7 +1,7 @@
 
 # Configuration of On-Prem devices
 
-The on-prem servers is comprised of various components. These components may differ from customer to customer. Following are some major Cisco components that can be used to configure the on-prem servers.
+The on-prem servers are comprised of various components. These components may differ from customer to customer. Following are some major Cisco components that can be used to configure the on-prem servers.
 
 * [Cisco Application Centric Infrastructure (ACI)](./ciscoaci.md)
 
