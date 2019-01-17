@@ -1,4 +1,6 @@
 
+[![published](https://static.production.devnetcloud.com/codeexchange/assets/images/devnet-published.svg)](https://developer.cisco.com/codeexchange/github/repo/CiscoDevNet/multicloud-integrations)
+
 # Multicloud Integration
 
 This repository contains engineering documentation covering components of the Cisco Multicloud integeration solutions.

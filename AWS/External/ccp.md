@@ -1,8 +1,8 @@
 # Cisco Container Platform 
 
 
-* Installation for CCP RC3 can be found [here](https://wwwin-github.cisco.com/CPSG/ccp-docs/blob/master/install-docs/CCP-Installation-Guide-01.md#installing-cisco-container-platform-on-vsphere-web-client).
-* To setup the Kubernetes clusters, the steps can be found [here](https://wwwin-github.cisco.com/CPSG/ccp-docs/blob/master/install-docs/CCP-User-Guide-01.md#creating-kubernetes-clusters).
+* Installation for CCP can be found [here](https://www.cisco.com/c/en/us/td/docs/net_mgmt/cisco_container_platform/2-2/Installation_Guide/CCP-Installation-Guide-2-2-0/CCP-Installation-Guide-2-2-0_chapter_011.html).
+* To setup the Kubernetes clusters, the steps can be found [here](https://www.cisco.com/c/en/us/support/cloud-systems-management/container-platform/products-user-guide-list.html).
   
   **Note** : 
   
