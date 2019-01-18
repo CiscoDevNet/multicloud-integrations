@@ -3,6 +3,10 @@
 pipeline{
     agent { label 'ci-runner' }
 
+    parameters {
+        string(name: 'ghprbActualCommit', defaultValue: 'working')
+    }
+
     stages {
         stage ('Setup SCM') {
             steps {
