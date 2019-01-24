@@ -6,7 +6,7 @@ CCP can provision EKS and on-premises kubernetes clusters with a common identity
 
 ## AWS ECR Access from CCP provisioned on-premises Kubernetes clusters
 
-Two solutions to provide access to Amazon's ECR (Elastic Container Registry) from on-prem clusters can be found [here](/aws/AWSConfig/ecr/README.md)
+Two solutions to provide access to Amazon's ECR (Elastic Container Registry) from on-prem clusters can be found [here](ecr/README.md)
 
 ## Multicloud Networking
 
