@@ -61,7 +61,7 @@ Amazon Web Services - Cisco CSR 1000v Documentation:
  * [AWS Automated Transit VPC Deploying using Cisco CSR 1000v](https://docs.aws.amazon.com/solutions/latest/cisco-based-transit-vpc/deployment.html)
  * [Understanding the AWS Transit Network VPC with Cisco CSR 1000v](https://docs.aws.amazon.com/solutions/latest/cisco-based-transit-vpc/overview.html)
 
-Cisco - Cisco CSR 1000v Documentation:  <**: Insert NEW CLOUD CONNECT documents here**>
+Cisco - Cisco CSR 1000v Documentation:
  * [New Guide! - Cisco Multicloud Portfolio: Cloud Connect Design Considerations and Overview](https://www.cisco.com/c/en/us/solutions/collateral/cloud/guide-c07-741193.html)
  * [New Guide! - Cisco Multicloud Portfolio: Cloud Connect AWS Transit VPC with Cisco CSR 1000V](https://www.cisco.com/c/en/us/products/collateral/routers/cloud-services-router-1000v-series/guide-c07-740270.html)
  * [Cisco CSR 1000v Deployment Guide for AWS](https://www.cisco.com/c/en/us/td/docs/routers/csr1000/software/aws/b_csraws.html)
@@ -285,7 +285,7 @@ traceroute to www.cisco.com (69.192.206.157), 3 hops max, 60 byte packets
 ### 4. EKS Worker Node Access to Amazon ECR Repository
 
 
-The final validation step to ensure that there is both Internet and AWS service connectivity from Amazon EC2 instances will be to validate that we can perform a Docker push to the Amazon ECR repository that the Cisco Container Platform set up. **Note:** This document does not discuss IAM requirements to perform the following test. **<: Provide a link to the CCP ECR documentation>**
+The final validation step to ensure that there is both Internet and AWS service connectivity from Amazon EC2 instances will be to validate that we can perform a Docker push to the Amazon ECR repository that the Cisco Container Platform set up. **Note:** This document does not discuss IAM requirements to perform the following test.
 
 In the following example, we are using the Amazon ECR repository set up by the Cisco Container Platform. The example repository, in this case, is called "cisco-ott-stack-ecr-repo". In the AWS Console > Amazon ECS > Amazon ECR > Repositories screen, you will find the repository. In that screen, there is a "View Push Commands". Using these steps is the quickest way to validate access to the ECR repository.
 
@@ -365,7 +365,7 @@ Before we can deploy the Cisco CSR 1000v, there is basic information that is req
 
 In the example walk-through in this document, we will obtain the VPC ID directly from the Cisco Container Platform UI for the AWS EKS clusters. **<: Provide a link to the CCP VPC documentation>**. You can also obtain the VPC ID from the AWS EKS console if you know the EKS cluster name that was deployed. 
 
-The VPC ID is provided as an input to a custom shell script <**<: UPDATE with new script URL>**. The script output shows that the VPC ID is used to fetch the required AWS subnet and route table information is gathered via the AWS CLI and dumped into a text file called "myvpcinfo.txt". This information will be required in the later steps when deploying the Cisco CSR 1000v
+The VPC ID is provided as an input to a custom [shell script](../../../automation/scripts). The script output shows that the VPC ID is used to fetch the required AWS subnet and route table information is gathered via the AWS CLI and dumped into a text file called "myvpcinfo.txt". This information will be required in the later steps when deploying the Cisco CSR 1000v
 
 **Note**: This script requires that you have the AWS CLI installed and configured for authentication into AWS. Information for installing and setting up the AWS CLI can be found here: [AWS CLI](https://aws.amazon.com/cli/).
 
@@ -402,7 +402,7 @@ rtb-0d1f238019ae4595c
 172.16.5.0/24
 ```
 
-With the information from the script output and the other required information that was gathered from the bulleted list above, we are ready to use the sample AWS CloudFormation template for the Cisco CSR 1000v deployment located here:  **<: Provide a link github csr CF template>**.  In this document, we will deploy the sample template via the AWS CloudFormation in the [AWS Console](https://us-west-2.console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks). 
+With the information from the script output and the other required information that was gathered from the bulleted list above, we are ready to use the sample AWS CloudFormation template for the Cisco CSR 1000v deployment located [here](../../../automation/cf/).  In this document, we will deploy the sample template via the AWS CloudFormation in the [AWS Console](https://us-west-2.console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks). 
 
 To use the above template:
 * Download the template.
