@@ -82,7 +82,8 @@ Resources:
         - IpProtocol: icmp
           FromPort: '-1'
           ToPort: '-1'
-          CidrIp: <ENTERPRISE_CIDR_HERE>
+          CidrIp:
+            !Ref OnPremCidr1
         - IpProtocol: icmp
           FromPort: '-1'
           ToPort: '-1'
@@ -91,7 +92,8 @@ Resources:
         - IpProtocol: icmp
           FromPort: '-1'
           ToPort: '-1'
-          CidrIp: <ENTERPRISE_CIDR_HERE>
+          CidrIp:
+            !Ref OnPremCidr1
         - IpProtocol: icmp
           FromPort: '-1'
           ToPort: '-1'
@@ -100,7 +102,8 @@ Resources:
         - IpProtocol: icmp
           FromPort: '-1'
           ToPort: '-1'
-          CidrIp: <ENTERPRISE_CIDR_HERE>
+          CidrIp:
+            !Ref OnPremCidr1
         # TCP
         - IpProtocol: tcp
           FromPort: '22'
@@ -149,11 +152,19 @@ Resources:
             - "ios-config-14=\"proposal AES/GCM/256\"\n"
             - "ios-config-15=\"crypto ikev2 keyring DMVPN-KEYRING\"\n"
             - "ios-config-16=\"peer ANY\"\n"
-            - "ios-config-17=\"address <ENTER_PEER_RANGES_HERE>\"\n"
-            - "ios-config-18=\"pre-shared-key <ENTER_PSK_HERE>\"\n"
+            - "ios-config-17=\"address "
+            - !Ref PeerAddrRangeStart
+            - " "
+            - !Ref PeerAddrRangeEnd
+            - "\"\n"
+            - "ios-config-18=\"pre-shared-key "
+            - !Ref PreSharedKey
+            - "\"\n"
             - "ios-config-19=\"crypto ikev2 profile DMVPN-IKEv2-PROFILE\"\n"
             - "ios-config-20=\"description PSK Profile\"\n"
-            - "ios-config-21=\"match identity remote address <ENTER_REMOTE_PEER_HERE>\"\n"
+            - "ios-config-21=\"match identity remote address "
+            - !Ref RemotePeerAddress
+            - "\"\n"
             - "ios-config-23=\"authentication remote pre-share\"\n"
             - "ios-config-24=\"authentication local pre-share\"\n"
             - "ios-config-25=\"keyring local DMVPN-KEYRING\"\n"
@@ -173,18 +184,28 @@ Resources:
             - "\"\n"
             - "ios-config-36=\"no ip redirects\"\n"
             - "ios-config-37=\"ip mtu 1400\"\n"
-            - "ios-config-38=\"ip nhrp authentication <ENTER_NHRP_KEY_HERE>\"\n"
+            - "ios-config-38=\"ip nhrp authentication "
+            - !Ref NhrpKey
+            - "\"\n"
             - "ios-config-39=\"ip nhrp network-id 100\"\n"
-            - "ios-config-40=\"ip nhrp nhs <ENTER_HUB_TUNNEL_IP_HERE> nbma <ENTER_HUB_PUBLIC_IP_HERE> multicast\"\n"
+            - "ios-config-40=\"ip nhrp nhs "
+            - !Ref HubTunnelIP
+            - " nbma "
+            - !Ref RemotePeerAddress
+            - " multicast\"\n"
             - "ios-config-41=\"ip tcp adjust-mss 1360\"\n"
-            - "ios-config-42=\"ip ospf authentication-key 7 <ENTER_OSPF_AUTH_KEY_HERE>\"\n"
+            - "ios-config-42=\"ip ospf authentication-key 7 "
+            - !Ref OspfAuthKey
+            - "\"\n"
             - "ios-config-43=\"ip ospf network point-to-multipoint\"\n"
             - "ios-config-44=\"ip ospf hello-interval 10\"\n"
             - "ios-config-45=\"tunnel source GigabitEthernet1\"\n"
             - "ios-config-46=\"tunnel mode gre multipoint\"\n"
             - "ios-config-47=\"tunnel key 100\"\n"
             - "ios-config-48=\"tunnel protection ipsec profile DMVPN-IPSEC-PROFILE\"\n"
-            - "ios-config-50=\"router ospf <ENTER_OSPF_PROCESS_ID_HERE>\"\n"
+            - "ios-config-50=\"router ospf "
+            - !Ref OspfProcessId
+            - "\"\n"
             - "ios-config-51=\"redistribute static subnets\"\n"
             - "ios-config-52=\"router-id "
             - !Ref DmvpnIp
@@ -262,8 +283,16 @@ Metadata:
       - Label:
           default: "Cisco IOS Configuration"
         Parameters:
+          - PeerAddrRangeStart
+          - PeerAddrRangeEnd
+          - PreSharedKey
+          - RemotePeerAddress
           - DmvpnIp
           - DmvpnNetmask
+          - NhrpKey
+          - HubTunnelIP
+          - OspfAuthKey
+          - OspfProcessId
           - OspfTunnelNetwork
           - OspfTunnelWildcard
           - OspfTunnelArea
@@ -309,10 +338,26 @@ Metadata:
         default: "Private Route Table 3 ID (rtb)"
       OnPremCidr1:
         default: "On-Premises CCP CIDR"
+      PeerAddrRangeStart:
+        default: "Tunnel peer address range start IP"
+      PeerAddrRangeEnd:
+        default: "Tunnel peer address range end IP"
+      PreSharedKey:
+        default: "Tunnel pre-shared-key"
+      RemotePeerAddress:
+        default: "Tunnel remote peer IP address"
       DmvpnIp:
         default: "DMVPN IP"
       DmvpnNetmask:
         default: "DMVPN netmask"
+      NhrpKey:
+        default: "DMVPN NHRP key"
+      HubTunnelIP:
+        default: "DMVPN Hub's Tunnel IP address"
+      OspfAuthKey:
+        default: "OSPF authentication key"
+      OspfProcessId:
+        default: "OSPF process id"
       OspfTunnelNetwork:
         default: "OSPF tunnel network"
       OspfTunnelWildcard:
@@ -408,9 +453,9 @@ Parameters:
     Type: String
     MinLength: '7'
     MaxLength: '15'
-    Default: <ENTER_ENTERPRISE_CIDR_HERE>
+    Default: 10.0.0.0/16
     AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
-    ConstraintDescription: Must be a valid IP address of the form x.x.x.x
+    ConstraintDescription: Must be a valid IP address of the form x.x.x.x/yy
 
   # EC2 Configuration
   Hostname:
@@ -431,7 +476,7 @@ Parameters:
   InstanceType:
     Description: The EC2 instance type to use for the CSR 1000V
     Type: String
-    Default: t2.medium
+    Default: c4.large
     AllowedValues:
       - t2.medium
       - m3.medium
@@ -441,7 +486,7 @@ Parameters:
       - c4.2xlarge
       - c4.4xlarge
       - c4.8xlarge
-    ConstraintDescription: Must be a supported EC2 instance type for the CSR 1000V
+    ConstraintDescription: Must be a supported EC2 instance type for the CSR 1000V (c4.large recommended)
 
   KeyName:
     Type: 'AWS::EC2::KeyPair::KeyName'
@@ -458,6 +503,37 @@ Parameters:
     ConstraintDescription: Must be a valid IP CIDR range of the form x.x.x.x/x.
 
   # Cisco IOS Configuration
+  PeerAddrRangeStart:
+    Description: The starting IP address in the tunnel peer address range.
+    Type: String
+    MinLength: '7'
+    MaxLength: '15'
+    Default: 0.0.0.0
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})'
+    ConstraintDescription: Must be a valid IP address of the form x.x.x.x
+
+  PeerAddrRangeEnd:
+    Description: The ending IP address in the tunnel peer address range.
+    Type: String
+    MinLength: '7'
+    MaxLength: '15'
+    Default: 0.0.0.0
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})'
+    ConstraintDescription: Must be a valid IP address of the form x.x.x.x
+
+  PreSharedKey:
+    Description: The IKE crypto pre-shared-key for the tunnel
+    Type: String
+    ConstraintDescription: string to be used in the pre-shared-key command
+
+  RemotePeerAddress:
+    Description: The IP address of the remote peer for the tunnel
+    Type: String
+    MinLength: '7'
+    MaxLength: '15'
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})'
+    ConstraintDescription: Must be a valid IP address of the form x.x.x.x  
+
   DmvpnIp:
     Description: The IP address to assign to the DMVPN endpoint
     Type: String
@@ -475,6 +551,31 @@ Parameters:
     Default: 255.255.255.0
     AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})'
     ConstraintDescription: Must be a valid netmask of the form x.x.x.x
+
+  NhrpKey:
+    Description: The NHRP authentication key for the DMVPN setup
+    Type: String
+    ConstraintDescription: string to be used in the ip nhrp authentication command
+
+  HubTunnelIP:
+    Description: The tunnel IP address for the hub of the DMVPN NHRP setup
+    Type: String
+    MinLength: '7'
+    MaxLength: '15'
+    Default: 10.250.0.1
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})'
+    ConstraintDescription: Must be a valid IP address of the form x.x.x.x
+
+  OspfAuthKey:
+    Description: The ospf authentication key
+    Type: String
+    ConstraintDescription: string to be used in the ip ospf authentication-key
+
+  OspfProcessId:
+    Description: The process ID for the OSPF tunnel network
+    Type: Number
+    Default: 10
+    ConstraintDescription: Must be a number
 
   OspfTunnelNetwork:
     Description: The OSPF tunnel network
@@ -539,5 +640,5 @@ Mappings:
       BYOL: ami-99e5d0f9
       Included: ami-c5facfa5
     us-west-2:
-      BYOL: ami-e4d43d9c
+      BYOL: ami-08fc6bfb35adf51ac
       Included: ami-29d33a51
