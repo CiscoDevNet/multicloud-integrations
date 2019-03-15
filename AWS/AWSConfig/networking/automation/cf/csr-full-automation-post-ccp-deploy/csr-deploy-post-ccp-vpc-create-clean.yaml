@@ -59,7 +59,7 @@ Resources:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
       VpcId: !Ref VPC
-      GroupDescription: Allows access for IPsec, SSH and ping traffic
+      GroupDescription: Allows any access for IPsec; SSH from specific CIDR; all traffic from on-prem & private CIDRs
       SecurityGroupIngress:
         # Encapsulating Security Payload (ESP)
         - IpProtocol: '50'
@@ -73,38 +73,28 @@ Resources:
           FromPort: '4500'
           ToPort: '4500'
           CidrIp: 0.0.0.0/0
-        # ICMP
-        - IpProtocol: icmp
+        # All between onprem and private subnets
+        - IpProtocol: '-1'
           FromPort: '-1'
           ToPort: '-1'
           CidrIp:
             !Ref PrivateSubnetCidr1
-        - IpProtocol: icmp
-          FromPort: '-1'
-          ToPort: '-1'
-          CidrIp:
-            !Ref OnPremCidr1
-        - IpProtocol: icmp
+        - IpProtocol: '-1'
           FromPort: '-1'
           ToPort: '-1'
           CidrIp:
             !Ref PrivateSubnetCidr2
-        - IpProtocol: icmp
-          FromPort: '-1'
-          ToPort: '-1'
-          CidrIp:
-            !Ref OnPremCidr1
-        - IpProtocol: icmp
+        - IpProtocol: '-1'
           FromPort: '-1'
           ToPort: '-1'
           CidrIp:
             !Ref PrivateSubnetCidr3
-        - IpProtocol: icmp
+        - IpProtocol: '-1'
           FromPort: '-1'
           ToPort: '-1'
           CidrIp:
             !Ref OnPremCidr1
-        # TCP
+        # SSH
         - IpProtocol: tcp
           FromPort: '22'
           ToPort: '22'

@@ -246,6 +246,3 @@ if (( ${SKIP_STEP} <= 2 )); then
     aws ec2 authorize-security-group-ingress --group-id ${worker_sg} --protocol -1 --cidr ${ONPREMPODCIDR}
 fi
 
-if (( ${SKIP_STEP} <= 3 )); then
-    
-fi

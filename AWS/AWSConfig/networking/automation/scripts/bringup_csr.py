@@ -197,7 +197,7 @@ def main():
             print cmd_out
     except subprocess.CalledProcessError as e:
         print "ERROR creating CSR and DMVPN: {out}".format(out=e.output)
-        system.exit(1)
+        sys.exit(1)
 
     LOG.debug("Creating pod network routes")
     create_pod_network_routes(args.vpcNamePrefix, args.onPremPodCidr)
