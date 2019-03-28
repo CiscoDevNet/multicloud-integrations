@@ -10,6 +10,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 import subprocess
 import sys
+import tempfile
 import time
 import yaml
 
@@ -165,7 +166,29 @@ def findClusterCfgData(clusterCfg):
     if not clusterCfg.get('region'):
         clusterCfg['region'] = subprocess.check_output(["aws", "configure", "get", "region"]).strip()
 
-    
+def awsEksDisableSNAT(kubeconfig):
+    # reference: https://docs.aws.amazon.com/eks/latest/userguide/external-snat.html
+    awsNodeDaemonsetJson = subprocess.check_output(["kubectl", "--kubeconfig="+kubeconfig, "get", "daemonset", "-n", "kube-system", "aws-node", "-o", "json"])
+    awsNodeDaemonset = json.loads(awsNodeDaemonsetJson)
+    for cntnr in awsNodeDaemonset["spec"]["template"]["spec"]["containers"]:
+        if cntnr['name'] == 'aws-node':
+            env = cntnr.get('env')
+            foundSnat = False
+            if env:
+                for envItem in env:
+                    if envItem['name'] == 'AWS_VPC_K8S_CNI_EXTERNALSNAT':
+                        foundSnat = True
+                        envItem['value'] = "true"
+                if not foundSnat:
+                    env.append({'name': 'AWS_VPC_K8S_CNI_EXTERNALSNAT', 'value': 'true'})
+            break
+        else:
+            return "ERROR: Unable to disable SNAT due to not finding `aws-node` container in daemonset"
+    with tempfile.NamedTemporaryFile() as tf:
+        json.dump(awsNodeDaemonset, tf)
+        tf.flush()
+        replResult = subprocess.check_output(["kubectl", "--kubeconfig="+kubeconfig, "replace", "-n", "kube-system", "-f", tf.name])
+    return replResult
 
 def main():
     """ Bringup AWS cluster via CCP"""
@@ -198,6 +221,11 @@ def main():
                         action='store_true',
                         help='Debug level of output')
 
+    parser.add_argument('--skipCreate',
+                        default=False,
+                        action='store_true',
+                        help='Skip the actual cluster create step--redo the post create setup.')
+
     args = parser.parse_args()
 
     #if not args.clusterCfgFile or not args.ccpIp or not args.ccpPort or not args.ccpPassword or not args.providerStr:
@@ -217,9 +245,10 @@ def main():
                                 cfgfile_data['subnet']['privateCidrs'])
     ccpSession = CcpSession(ip=args.ccpIp, port=args.ccpPort, password=args.ccpPassword)
     awsProvider = ccpSession.get_aws_provider(args.providerStr)
-    ccpSession.create_aws_cluster(cfgfile_data['name'], awsProvider, awsSubnets,
-                                  cfgfile_data['region'], cfgfile_data['ssh_keys'],
-                                  cfgfile_data['aws_role_arn'])
+    if not args.skipCreate:
+        ccpSession.create_aws_cluster(cfgfile_data['name'], awsProvider, awsSubnets,
+                                      cfgfile_data['region'], cfgfile_data['ssh_keys'],
+                                      cfgfile_data['aws_role_arn'])
 
     if ccpSession.wait_for_cluster_state(cfgfile_data['name']) == 'READY':
         print "Cluster ready, creating kubeconfig"
@@ -227,6 +256,11 @@ def main():
         if kubeconf_file:
             ccpSession.create_cluster_kubeconfig(cfgfile_data['name'], kubeconf_file)
 
+            enable_snat = cfgfile_data.get('enable_snat')
+            if not enable_snat:
+                print "Disabling EKS SNAT"
+                print awsEksDisableSNAT(kubeconf_file)
+            
             apply_manifests = cfgfile_data.get('apply_manifests')
             if apply_manifests:
                 for manifest in apply_manifests:
