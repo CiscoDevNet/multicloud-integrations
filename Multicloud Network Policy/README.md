@@ -9,7 +9,7 @@ Topics covered:
 
 * Discussion of the networking aspects that affect network policy behavior and capabilities
 
-* A contrast of network policy capabilities in a single cluster environment versus a multicluster environment
+* A contrast of network policy capabilities in a single cloud environment versus a multicloud environment
 
 * Enumeration of additional work or functionality that could be added to improve the behavior
 
