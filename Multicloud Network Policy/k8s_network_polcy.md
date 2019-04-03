@@ -12,10 +12,9 @@ end point.
 # Kubernetes Network Policy API
 
 The Kubernetes community has specified an API which defines the semantics of the network policy functionality.  The community has described the concepts:
-[Network Policy Concepts]: https://kubernetes.io/docs/concepts/services-networking/network-policies/
+[Network Policy Concepts](https://kubernetes.io/docs/concepts/services-networking/network-policies/)
 The full API definition is available:
-[Network Policy API]:
-https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.12/#networkpolicy-v1-networking-k8s-io
+[Network Policy API](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.12/#networkpolicy-v1-networking-k8s-io)
 The Kubernetes community has only defined the API.  They do not define how the functionality specified by the API should be implemented. Specifically, they do not define how or what components should be used to enforce the restrictions specified by the API.  Although not required by the API it is nearly generally accepted that CNI plugins will implement the policy enforcement. CNI plugins do not universally use the same low level components to match against the specified criteria and enforce the actions based on the match.  For example some CNIs use iptables to perform the required dataplane functions while other CNIs use Open vSwitch (OvS).
 
 # Vendor Specific Extensions and Integrations
@@ -23,7 +22,7 @@ The Kubernetes community has only defined the API.  They do not define how the f
 Vendors offer extensions to Kubernetes network policy API to provide additional functionality.
 Typically, these extensions allow more granular rules and the type of resources the rules
 can be applied to.  A good example of this is
-[Calico Networkpolicy]: https://docs.projectcalico.org/v3.6/reference/calicoctl/resources/networkpolicy
+[Calico Networkpolicy](https://docs.projectcalico.org/v3.6/reference/calicoctl/resources/networkpolicy)
 The Calico Networkpolicy API offers a superset of the functionality described by the K8s API.  It uses completely different API objects, but structured very similar to the K8s API objects.  It features:
 
 * More complicated pod match semantics
@@ -37,12 +36,12 @@ both APIs to express the policy and the ACI dataplane elements will enforce the 
 if both are specified.   The ACI team uses annotations on K8s resources to allow the user to
 easily specify how the K8s resources should be mapped to EPGs. More details on the
 ACI approach can be found here:
-[ACI + K8s Network Policy]: https://www.cisco.com/c/en/us/td/docs/switches/datacenter/aci/apic/sw/kb/b_Kubernetes_Integration_with_ACI.html
+[ACI + K8s Network Policy](https://www.cisco.com/c/en/us/td/docs/switches/datacenter/aci/apic/sw/kb/b_Kubernetes_Integration_with_ACI.html)
 
 # Calico Networkpolicy implementation overview
 
 The Calico documentation
-[Calico Architecture]: https://docs.projectcalico.org/v3.6/reference/architecture/
+[Calico Architecture](https://docs.projectcalico.org/v3.6/reference/architecture/)
 offers a more complete description of the Calico architecture but a few points are noted here
 specific to the network policy implementation.   Since Calico has its own NetworkPolicy API,
 which a superset of capabilities K8s NetworkPolicy objects are actually represented as

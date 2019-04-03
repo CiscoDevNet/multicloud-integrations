@@ -1,7 +1,14 @@
 
-# Application of Network Policy in a Multicloud Environment
+# Application of Policy in a Multicloud Environment
 
-The application of network policy in a multicloud environment is significantly different than when network policy is applied to a single Kubernetes cluster.  This directory and its sub-directories will provide a complete understanding of network policy application in a multicloud environment.
+The application of policy in a multicloud environment is significantly different than
+when policy is applied to a single Kubernetes cluster.  If we consider just policy
+at the network level there is a huge difference in effectiveness between the two
+enviornments.  Conversley, application level policy has only minor differences
+when applied in the two environments.   This content will provide a complete
+understanding of network policy application in a multicloud environment. It 
+will also provide some contrast between application level policy and network
+level policy in a multicloud environment
 
 Topics covered:
 
@@ -15,5 +22,21 @@ Topics covered:
 
 * Differences in behavior based on the environment hosting the Kubernetes cluster
 
-* Test results from different use cases
+* A contrast between application level policy and network level policy
 
+The term "policy" is an overloaded term which has different meanings based on the context it
+is used.  When readers see the word "policy" their first thoughts are often different based on
+the individuals background.  Therefore to start us off we will first describe what we mean by
+network policy as it applies in a Kubernetes environment
+[K8s Network Policy](https://github.com/john-a-joyce/multicloud-integrations/blob/network-policy-struct/Multicloud%20Network%20Policy/k8s_network_polcy.md#network-policy)
+
+Network policy has some significant limitations when applied to multicloud environments.
+The limitations we describe in the next section are not simply due to the implementations
+that provide teh API semantics.  They are more fundimental and would difficult to
+overcome at the network layer of the protocol stack.  he limiations are described
+here in this next section 
+[Limitations](https://github.com/john-a-joyce/multicloud-integrations/blob/network-policy-struct/Multicloud%20Network%20Policy/limitations.md#network-policy-limitations)
+
+We have put together some example scenarios so you can directly see the impact of these limitations
+and try things out for yourself.
+[Tim's content](link)

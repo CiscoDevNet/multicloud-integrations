@@ -13,10 +13,10 @@ the limitations that will be described below only affect inter-cloud traffic.
 
 Application level policy refers to the ability to define policy at Layer 7 of the protocol
 stack.  There are many solutions that offer application level policy including:
-[Istio]: https://istio.io/
-[Calico]: https://docs.projectcalico.org/v3.6/security/app-layer-policy/
-[Cilium]: https://cilium.io/
-[Linkerd]: https://linkerd.io/
+[Istio](https://istio.io/)
+[Calico](https://docs.projectcalico.org/v3.6/security/app-layer-policy/)
+[Cilium](https://cilium.io/)
+[Linkerd](https://linkerd.io/)
 
 Application policy offers a much higher level of functionality than the network policy options
 discussed in this blog.  Unlike network policy, application level policy retains its benefits
