@@ -39,4 +39,5 @@ here in this next section
 
 We have put together some example scenarios so you can directly see the impact of these limitations
 and try things out for yourself.
-[Tim's content](link)
+
+* [Calico Stars Example Across EKS and CCP with DMVPN](examples/dmvpn_eks_ccp_calico_stars.md)
