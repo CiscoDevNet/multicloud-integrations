@@ -7,3 +7,9 @@ The following network deployment options support the primary use case mentioned 
 * [Internet Over-the-Top (OTT) Network Deployment](ott/README.md)
 * [DMVPN-based Network Deployment using an AWS-hosted Cisco CSR 1000v (single router model - FOR PoC ONLY)](csr-dmvpn/README.md)
 
+### Kubernetes Pod Networking
+
+For hybrid-cloud workloads interconnected via VPN, it is possible to route between Kubernetes pods located on either side of the VPN tunnel.  The following sections provide details on setups and considerations:
+
+*  [Enabling Hybrid Cloud Pod Networking for the AWS CSR-DMVPN Model](csr-dmvpn/pod-networking.md)
+*  [Setting up K8s Multicluster Services in NAT-less hybrid cloud setups](/common/networking/multicluster_services.md)
