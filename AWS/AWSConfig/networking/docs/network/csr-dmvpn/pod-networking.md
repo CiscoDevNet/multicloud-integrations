@@ -10,6 +10,12 @@ This section describes the additional steps for enabling inter-k8s cluster pod-t
 
 For the deployment of the AWS VPC side of the DMVPN, the Cisco CSR was used to create the DMVPN connection.  The Cloudformation template to deploy the CSR instance creates routes to the CSR instance for the on-premises IP CIDR in the VPC's routing tables for the private subnets.  The on-premises IP CIDR is for the network that the CCP tenant clusters' nodes are deployed on.  This allows reaching the Kubernetes *nodes* in any on-premises CCP tenant clusters.
 
+The AWS VPC-side steps to allow pod-routing are:
+
+1. Setup [VPC Route-tables](#VPC-Route-tables)
+1. Setup [Security Groups](#Security-Groups)
+1. (_Optional_) Setup [EKS Pod SNAT](EKS-Pod-SNAT)
+
 ### VPC Route-tables
 
 Given that the default route for VPC private subnets is the VPC NAT Gateway, the CCP tenant Kubernetes clusters' pod network CIDRs will be routed to the VPC NAT Gateway instead of through the DMVPN connection.  To route on-premises pod CIDRs through the DMVPN, the VPC's private subnets' route tables need to have routes added for any on-premises clusters' pod CIDRs with a next-hop of the VPC's CSR.
