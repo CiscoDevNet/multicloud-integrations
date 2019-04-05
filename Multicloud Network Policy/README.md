@@ -32,8 +32,8 @@ network policy as it applies in a Kubernetes environment
 
 Network policy has some significant limitations when applied to multicloud environments.
 The limitations we describe in the next section are not simply due to the implementations
-that provide teh API semantics.  They are more fundimental and would difficult to
-overcome at the network layer of the protocol stack.  he limiations are described
+that provide the API semantics.  They are more fundimental and would difficult to
+overcome at the network layer of the protocol stack.  The limiations are described
 here in this next section 
 [Limitations](https://github.com/john-a-joyce/multicloud-integrations/blob/network-policy-struct/Multicloud%20Network%20Policy/limitations.md#network-policy-limitations)
 

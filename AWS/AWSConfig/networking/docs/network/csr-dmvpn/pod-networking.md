@@ -8,7 +8,7 @@ This section describes the additional steps for enabling inter-k8s cluster pod-t
 
 ## AWS VPC Steps
 
-Deployment of the AWS VPC side of the DMVPN, the Cisco CSR was used to create the DMVPN connection.  The Cloudformation template to deploy the CSR instance creates routes to the CSR instance for the on-premises IP CIDR in the VPC's routing tables for the private subnets.  The on-premises IP CIDR is for the network that the CCP tenant clusters' nodes are deployed on.  This allows reaching the Kubernetes *nodes* in any on-premises CCP tenant clusters.
+For the deployment of the AWS VPC side of the DMVPN, the Cisco CSR was used to create the DMVPN connection.  The Cloudformation template to deploy the CSR instance creates routes to the CSR instance for the on-premises IP CIDR in the VPC's routing tables for the private subnets.  The on-premises IP CIDR is for the network that the CCP tenant clusters' nodes are deployed on.  This allows reaching the Kubernetes *nodes* in any on-premises CCP tenant clusters.
 
 ### VPC Route-tables
 
