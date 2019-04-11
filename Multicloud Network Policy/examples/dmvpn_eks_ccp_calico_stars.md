@@ -24,46 +24,283 @@ on-premises Kubernetes tenant pods into the VPC routing infrastructure.
 
 ## Deploying the Multicloud Clusters and DMVPN Connectivity
 
+The following steps are an automation example for using CCP to deploy an AWS EKS cluster with
+network-policy functionality (via Calico) and the
+[AWS CSR-DMVPN networking model](../../AWS/AWSConfig/networking/docs/network/csr-dmvpn/README.md).
+
 ### Deploy the AWS EKS Cluster
 
+The example automation [bringup_aws_cluster.py](../../AWS/AWSConfig/networking/automation/scripts/bringup_aws_cluster.py)
+is used to trigger CCP to create an AWS EKS cluster.  Additionally, it enables network-policy functionality
+and disables SNAT on the cluster.
+
+**Cluster configuration file `/cfg/ccp/aws.yaml` content:**
+
+```
+---
+name: aws
+subnet:
+  cidr: 10.0.0.0/16
+  publicCidrs:
+    - 10.0.106.0/24
+    - 10.0.107.0/24
+    - 10.0.108.0/24
+  privateCidrs:
+    - 10.0.109.0/24
+    - 10.0.110.0/24
+    - 10.0.111.0/24
+
+role_arn_name: k8s-ccp-user
+
+ssh_keys:
+  - my-key
+
+kubeconf_file: /cfg/aws-kubeconfig.yaml
+
+apply_manifests:
+  - https://raw.githubusercontent.com/aws/amazon-vpc-cni-k8s/master/config/v1.3/calico.yaml
+
+```
+
+**NOTE:** The `apply_manifests` list will apply each manifest to the EKS cluster using kubectl.  In
+this case it applies the AWS VPC CNI compatible Calico manifest for the network-policy feature.
+
+**Script Execution:**
+
+```
+$ ./bringup_aws_cluster.py --ccpIp 127.0.0.1 --ccpPort 29443 --ccpPassword 'abcd123!' --providerStr myAwsProv --clusterCfgFile /cfg/ccp/aws.yaml
+```
+
+Upon completion of the above a EKS cluster named `aws` has been created by CCP and its
+kubeconfig is stored in `/cfg/aws1-kubeconfig.yaml`.
+
 ### Deploy the DMVPN & Inter-cloud Pod Routing Connectivity
+
+The example automation [bringup_csr.py](../../AWS/AWSConfig/networking/automation/scripts/bringup_csr.py)
+is used to create a CSR instance in the VPC created for the EKS cluster `aws` and configure it
+for the DMVPN scenario.  Additionally, the automation enables pod-to-pod routing over the DMVPN
+connection between the clusters.  It also adds the security group rules to allow traffic
+between clusters' pods.
+
+**DMVPN Configuration file `/cfg/ccp/dmvpn_conf.yaml` content:**
+
+```
+---
+InstanceType: c4.large
+InboundSSH: 0.0.0.0/0
+ike_keyring_peer:
+  ip_range:
+    start: 0.0.0.0
+    end: 0.0.0.0
+  pre-shared-key: abcdefghijklmn012345
+
+ike_profile:
+  remote_peer_ip:  <public/routeable IP of the remote peer>
+
+DmvpnIp: 10.250.0.9
+DmvpnNetmask:  255.255.255.0
+
+nhrp:
+  key:          keykey00
+  HubTunnelIP:  10.250.0.1
+
+ospf:
+  processId: 10
+  authKey: DEADBEEF0123456789
+  tunnelNetwork: 10.250.0.0
+  tunnelWildcard: 0.0.0.255
+  vpcArea: 2
+  tunnelArea: 0
+```
+
+**Script Execution:**
+
+```
+/scripts/bringup_csr.py --vpcNamePrefix aws --sshKey my-key --onPremCidr 10.1.0.0/16 --onPremPodCidr 192.168.0.0/16 --clusterCfgFile /cfg/ccp/aws.yaml --dmvpnCfgFile /cfg/ccp/dmvpn_conf.yaml --debug
+```
+
+### Verifying inter-cluster pod-to-pod communication
+
+#### Environment setup
+
+The following assumes an environment where `kubectl` contexts are set up such that:
+
+- context `aws` is associated with the AWS EKS cluster
+- context `ccp` is associated with the on-prem CCP cluster
+
+**Example:**
+
+```
+$ export KUBECONFIG=/cfg/ccp-kubeconfig.yaml:/cfg/aws-kubeconfig.yaml
+$ kubectl config get-contexts
+CURRENT   NAME      CLUSTER          AUTHINFO               NAMESPACE
+          aws       kubernetes       aws
+*         ccp       ccp_kubernetes   ccp_kubernetes-admin
+```
+
+#### Verify using utility pods
+
+This is an example using `busybox` pods (which contain basic utilities like `ping` and `curl`)
+to show pod-to-pod communication over the DMVPN tunnel.
+
+```
+# start busybox on AWS cluster
+$ cat <<EOF | kubectl apply --context aws -f -
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: busybox
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: busybox
+    spec:
+      containers:
+      - name: busybox
+        image: radial/busyboxplus
+        command: ["sleep", "7200"]
+        imagePullPolicy: IfNotPresent
+EOF
+
+# start busybox on ccp cluster
+$ cat <<EOF | kubectl apply --context ccp -f -
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: busybox
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: busybox
+    spec:
+      containers:
+      - name: busybox
+        image: radial/busyboxplus
+        command: ["sleep", "7200"]
+        imagePullPolicy: IfNotPresent
+EOF
+
+# get pod names and IPs for each cluster
+aws_pod_nm=$(kubectl get pods -l app=busybox --context aws -o jsonpath='{.items[0].metadata.name}')
+aws_pod_ip=$(kubectl get pods -l app=busybox --context aws -o jsonpath='{.items[0].status.podIP}')
+ccp_pod_nm=$(kubectl get pods -l app=busybox --context ccp -o jsonpath='{.items[0].metadata.name}')
+ccp_pod_ip=$(kubectl get pods -l app=busybox --context ccp -o jsonpath='{.items[0].status.podIP}')
+
+# ping from AWS busybox to CCP busybox pod
+$ kubectl exec -t ${aws_pod_nm} --context aws -- ping -c3 ${ccp_pod_ip}
+
+PING 192.168.1.184 (192.168.1.184): 56 data bytes
+64 bytes from 192.168.1.184: seq=0 ttl=60 time=22.542 ms
+64 bytes from 192.168.1.184: seq=1 ttl=60 time=22.503 ms
+64 bytes from 192.168.1.184: seq=2 ttl=60 time=22.795 ms
+
+--- 192.168.1.184 ping statistics ---
+3 packets transmitted, 3 packets received, 0% packet loss
+round-trip min/avg/max = 22.503/22.613/22.795 ms
+
+# ping from CCP busybox to AWS busybox pod
+$ kubectl exec -t ${ccp_pod_nm} --context ccp -- ping -c3 ${aws_pod_ip}
+
+kubectl exec -t ${ccp_pod_nm} --context ccp -- ping -c3 ${aws_pod_ip}
+PING 10.0.110.197 (10.0.110.197): 56 data bytes
+64 bytes from 10.0.110.197: seq=0 ttl=60 time=22.718 ms
+64 bytes from 10.0.110.197: seq=1 ttl=60 time=22.505 ms
+64 bytes from 10.0.110.197: seq=2 ttl=60 time=22.556 ms
+
+--- 10.0.110.197 ping statistics ---
+3 packets transmitted, 3 packets received, 0% packet loss
+round-trip min/avg/max = 22.505/22.593/22.718 ms
+```
 
 ## Deploying the Calico Stars Application Across Clouds
 
 In this example, we deploy 2 services in the on-premises CCP tenant cluster and 2 services
 in the EKS cluster.
 
-**Figure 1.** Services `frontend` and `backend` on-premises; service `client` and `management-ui` in EKS
+**Figure 1.** Services `frontend` and `backend` on-premises; services `client` and `management-ui` in EKS
 
 ![multicluster_stars_deployment.png](images/multicluster_stars_deployment.png)
 
 ### Deployment of Services
 
 ```
-# NOTE: kubectl context "ccp_mc1" is the on-premises k8s cluster
+# NOTE: kubectl context "ccp" is the on-premises k8s cluster
 #       context "aws" is the EKS k8s cluster with DMVPN connectivity to on-prem
+STARS_MFSTS=https://docs.projectcalico.org/v3.1/getting-started/kubernetes/tutorials/stars-policy/manifests
+kubectl apply --context ccp -f $STARS_MFSTS/00-namespace.yaml
+kubectl apply --context ccp -f $STARS_MFSTS/02-backend.yaml
+kubectl apply --context ccp -f $STARS_MFSTS/03-frontend.yaml
 
-kubectl apply -f namespace.yaml --context ccp_mc1
-kubectl apply -f backend.yaml --context ccp_mc1
-kubectl apply -f frontend.yaml --context ccp_mc1
-
-kubectl create ns management-ui --context aws
 kubectl create ns client --context aws
-kubectl apply -f management-ui.yaml --context aws
-kubectl apply -f client.yaml --context aws
+kubectl apply --context aws -f $STARS_MFSTS/04-client.yaml
 ```
 
+Create the management-ui as a `LoadBalancer` type service, rather than the original definition of `NodePort`:
+
+```
+cat <<EOF | kubectl apply --context aws -f -
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: management-ui 
+  labels:
+    role: management-ui 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: management-ui 
+  namespace: management-ui 
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80 
+    targetPort: 9001
+  selector:
+    role: management-ui 
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: management-ui 
+  namespace: management-ui 
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        role: management-ui 
+    spec:
+      containers:
+      - name: management-ui 
+        image: calico/star-collect:v0.1.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9001
+EOF
+```
+
+**NOTE:** The use of `LoadBalancer` is to simply avoid having to use port-forwarding to access the UI.  The example
+still functions fine if you choose to stick with the original example's `NodePort` manifest.
+
 ### Mapping Services into Each Cluster's DNS
+
+The following uses the example automation to replicate services and endpoints to remote clusters
+as described in [K8s Multicluster Services in NAT-less Hybrid Cloud](../../common/networking/multicluster_services.md).
 
 ```
 $ cat <<EOF > ~/tmp/multicluster_stars_svcs.yaml
 clusters:
-- name: onPremCluster1
-  kubeconfig: /cfg/kubeconfig-onPremCluster1.yaml
+- name: ccp
+  kubeconfig: /cfg//cfg/ccp-kubeconfig.yaml
   services:
   - namespace: stars
-- name: eksCluster1
-  kubeconfig: /cfg/kubeconfig-eksCluster1.yaml
+- name: aws
+  kubeconfig: /cfg/aws-kubeconfig.yaml
   services:
   - namespace: management-ui
   - namespace: client
@@ -72,14 +309,19 @@ EOF
 $ $MCINTEG_ROOT/create_svc_endpoints.py --clusterSvcCfgFile ~/tmp/multicluster_stars_svcs.yaml --debug
 ```
 
-
 ### Accessing the UI
 
-Get the external service address for the `stars` UI as follows:
+Get the external service address/hostname for the `stars` UI as follows:
 
 ```
-kubectl get svc -n management-ui -o wide
+$ kubectl get svc management-ui -n management-ui --context aws -o wide
 ```
+OR
+```
+$ ui_host=$(kubectl get svc management-ui -n management-ui --context aws -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+```
+
+Access `http://${ui_host}/` to see the `management-ui` content
 
 When accessing the UI with no network-policies applied the following should be displayed:
 
@@ -87,7 +329,8 @@ When accessing the UI with no network-policies applied the following should be d
 
 ### Applying Network Policy
 
-**TODO**  cleanup/explain the policy apply stuff
+The following example applies network-policies across the 2 clusters with the result being
+the same effective policy as the original [Calico Stars Demo on AWS](https://docs.aws.amazon.com/eks/latest/userguide/calico.html).
 
 ```
 # Apply default-deny policy to client (EKS) and stars (on-prem) namespaces
@@ -101,11 +344,11 @@ spec:
     matchLabels: {}
 EOF
 
-kubectl apply -n stars --context ccp_mc1 -f ~/tmp/default-deny.yaml
+kubectl apply -n stars --context ccp -f ~/tmp/default-deny.yaml
 kubectl apply -n client --context aws -f ~/tmp/default-deny.yaml
 
 # Apply the normal backend policy to on-prem
-cat <<EOF | kubectl apply --context ccp_mc1 -f -
+cat <<EOF | kubectl apply --context ccp -f -
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
@@ -147,13 +390,15 @@ EOF
 mgmtui_ep=$(kubectl get endpoints management-ui -n management-ui --context aws -o jsonpath="{.subsets[0].addresses[0].ip}")
 mgmtui_ep_port=$(kubectl get endpoints management-ui -n management-ui --context aws -o jsonpath="{.subsets[0].ports[0].port}")
 
-cat <<EOF | kubectl create --context ccp_mc1 -f -
+cat <<EOF | kubectl create --context ccp -f -
 apiVersion: extensions/v1beta1
 kind: NetworkPolicy
 metadata:
   name: allow-ui
   namespace: stars
 spec:
+  podSelector:
+    matchLabels: {}
   ingress:
   - from:
     - ipBlock:
@@ -164,7 +409,7 @@ EOF
 
 # Allow client (EKS) to access frontend (on-prem)
 client_ep=$(kubectl get endpoints client -n client --context aws -o jsonpath="{.subsets[0].addresses[0].ip}")
-cat <<EOF | kubectl create --context ccp_mc1 -f -
+cat <<EOF | kubectl create --context ccp -f -
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
@@ -184,11 +429,18 @@ spec:
 EOF
 ```
 
-Upon completion the desired application communication of UI as a allowed client to all services, C allowed client to F, and F allowed client to B should be shown as in the image below:
+Upon completion, the desired application communication should be shown as in the image below:
+
+**Desired Communication:** C allowed client to F, and F allowed client to B.
 
 ![stars-final.png](images/stars-final.png)
 
+**NOTE:** In order to display the nodes in the figure, the `management-ui` service is an allowed
+client to all services.
+
 ## References
+
+- [AWS CSR-DMVPN Model](../../AWS/AWSConfig/networking/docs/network/csr-dmvpn/README.md)
 
 - [Enabling Hybrid Cloud Pod Networking for the AWS CSR-DMVPN Model](../../AWS/AWSConfig/networking/docs/network/csr-dmvpn/pod-networking.md)
 

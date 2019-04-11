@@ -25,6 +25,11 @@ role_arn_name: k8s-ccp-user
 ssh_keys:
   - tim-key
 
+kubeconf_file: /cfg/taws4-kubeconfig.yaml
+
+apply_manifests:
+  - https://raw.githubusercontent.com/aws/amazon-vpc-cni-k8s/master/config/v1.3/calico.yaml
+
 $ bringup_aws_cluster.py --ccpIp 127.0.0.1 --ccpPort 29443 --ccpPassword 'abcdefg' --providerStr tim --clusterCfgFile tim_aws.yaml
 
 ```
