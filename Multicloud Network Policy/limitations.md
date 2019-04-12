@@ -39,8 +39,8 @@ The inter-cloud use case limitations are due to the following factors
 
 * All of the network policy solutions are only able to use state from the local cluster to
 translate name based references to the layer 3 addresses. The rules that are installed in the
-dataplane are always IP CIDR based. (JAJ a footnote for Cilium's DNS approach?). Therefore
-matches based on pod name, labels or namespaces won't find IP CIDRs from any remote clouds.
+dataplane are always IP CIDR based. Therefore matches based on pod name, labels or namespaces
+won't find IP CIDRs from any remote clouds.
 
 * In Kubernetes, pods may be very dynamic and come and go on relatively short time scales.
 The pod IPs will change during this churn. Therefore it is impractical without special
@@ -96,4 +96,5 @@ traffic rules could only be expressed cluster wide.
 In a NAT environment it is also easy to express client side egress rules to any public facing and
 change invariant IPs.
 
-??? Do I need to note the egress rule issue with Calico ???
+To continue by going through a network policy example return to the main page.
+
