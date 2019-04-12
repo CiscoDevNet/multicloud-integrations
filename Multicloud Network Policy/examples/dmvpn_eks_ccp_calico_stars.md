@@ -1,6 +1,7 @@
 # Multicloud Network Policy Example: Calico Stars App on EKS and CCP Tenant Clusters
 
-In this example we use the "Stars" example application created by the Calico project to
+In this example we use the [Stars](https://docs.aws.amazon.com/eks/latest/userguide/calico.html)
+example application created by the Calico project to
 demonstrate the effects of Kubernetes network policies.  This example has a nice simple
 UI that illustrates communication between microservices.  To demonstrate multicloud
 network policy, we show a deployment with microservices in different clouds and example
@@ -9,7 +10,7 @@ cluster original demo.  The example is built upon the multicloud routing capabil
 in a multicloud DMVPN design.
 
 This example goes through expansion of the CCP tenancy into the AWS cloud via the CCP
-integrated EKS deployment capability.  Additionally, the example highlights the
+integrated EKS deployment capability.  Additionally, we highlight the
 multicloud DMVPN connectivity possibilities via use of example automation for provisioning
 an AWS EC2 hosted CSR instance as a DMVPN endpoint in the VPC and distributing routes to
 on-premises Kubernetes tenant pods into the VPC routing infrastructure.
@@ -27,6 +28,9 @@ on-premises Kubernetes tenant pods into the VPC routing infrastructure.
 The following steps are an automation example for using CCP to deploy an AWS EKS cluster with
 network-policy functionality (via Calico) and the
 [AWS CSR-DMVPN networking model](../../AWS/AWSConfig/networking/docs/network/csr-dmvpn/README.md).
+The example automation also enables the VPC and EKS cluster for
+[hybrid cloud pod networking](../../AWS/AWSConfig/networking/docs/network/csr-dmvpn/pod-networking.md)
+as the network-policy example requires inter-cluster pod-to-pod communication.
 
 ### Deploy the AWS EKS Cluster
 
@@ -79,8 +83,9 @@ kubeconfig is stored in `/cfg/aws1-kubeconfig.yaml`.
 The example automation [bringup_csr.py](../../AWS/AWSConfig/networking/automation/scripts/bringup_csr.py)
 is used to create a CSR instance in the VPC created for the EKS cluster `aws` and configure it
 for the DMVPN scenario.  Additionally, the automation enables pod-to-pod routing over the DMVPN
-connection between the clusters.  It also adds the security group rules to allow traffic
-between clusters' pods.
+connection between the clusters and adds the security group rules to allow traffic
+between clusters' pods as detailed in
+["Enabling Hybrid Cloud Pod Networking for the AWS CSR-DMVPN Model"](../../AWS/AWSConfig/networking/docs/network/csr-dmvpn/pod-networking.md).
 
 **DMVPN Configuration file `/cfg/ccp/dmvpn_conf.yaml` content:**
 
@@ -118,6 +123,12 @@ ospf:
 ```
 /scripts/bringup_csr.py --vpcNamePrefix aws --sshKey my-key --onPremCidr 10.1.0.0/16 --onPremPodCidr 192.168.0.0/16 --clusterCfgFile /cfg/ccp/aws.yaml --dmvpnCfgFile /cfg/ccp/dmvpn_conf.yaml --debug
 ```
+
+_Where_
+
+  - `onPremCidr` is the on-premises network CIDR to allow in VPC subnet security-groups
+
+  - `onPremPodCidr` is the on-premises Kubernetes cluster pod CIDR to allow in VPC subnet security-groups
 
 ### Verifying inter-cluster pod-to-pod communication
 
@@ -218,8 +229,21 @@ round-trip min/avg/max = 22.505/22.593/22.718 ms
 
 ## Deploying the Calico Stars Application Across Clouds
 
-In this example, we deploy 2 services in the on-premises CCP tenant cluster and 2 services
-in the EKS cluster.
+The [Stars](https://docs.aws.amazon.com/eks/latest/userguide/calico.html) application consists
+of 4 microservices--a `frontend` service, a `backend` service, a `client` service, and
+the `management-ui` service.  The `client`, `frontend`, and `backend` all attempt to send
+requests to each other and the `management-ui` service polls the other 3 to indicate
+the communication directions allowed.
+
+With the desired policy applied, the allowed communication is constrained to:
+
+- `client` is an allowed client of `frontend`
+- `frontend` is an allowed client of `backend`
+- `management-ui` is an allowed client of all the services (to collect data)
+
+For our multicloud scenario, we deploy the `frontend` and `backend` of the "stars"
+in the on-premises CCP tenant cluster and `client` and `management-ui` services
+in the EKS cluster as shown in the following figure.
 
 **Figure 1.** Services `frontend` and `backend` on-premises; services `client` and `management-ui` in EKS
 
@@ -284,7 +308,7 @@ spec:
 EOF
 ```
 
-**NOTE:** The use of `LoadBalancer` is to simply avoid having to use port-forwarding to access the UI.  The example
+**NOTE:** The use of `LoadBalancer` is to avoid having to use port-forwarding to access the UI.  The example
 still functions fine if you choose to stick with the original example's `NodePort` manifest.
 
 ### Mapping Services into Each Cluster's DNS
@@ -309,6 +333,9 @@ EOF
 $ $MCINTEG_ROOT/create_svc_endpoints.py --clusterSvcCfgFile ~/tmp/multicluster_stars_svcs.yaml --debug
 ```
 
+**NOTE:** In multicloud scenarios there are many DNS considerations and solutions.  For the
+sake of this example we replicate the services and pod endpoints to each remote cluster.
+
 ### Accessing the UI
 
 Get the external service address/hostname for the `stars` UI as follows:
@@ -332,111 +359,150 @@ When accessing the UI with no network-policies applied the following should be d
 The following example applies network-policies across the 2 clusters with the result being
 the same effective policy as the original [Calico Stars Demo on AWS](https://docs.aws.amazon.com/eks/latest/userguide/calico.html).
 
-```
-# Apply default-deny policy to client (EKS) and stars (on-prem) namespaces
-cat <<EOF > ~/tmp/default-deny.yaml
-kind: NetworkPolicy
-apiVersion: networking.k8s.io/v1
-metadata:
-  name: default-deny
-spec:
-  podSelector:
-    matchLabels: {}
-EOF
+  1. Apply default deny policies to each of application services' namespaces in each cluster.
 
-kubectl apply -n stars --context ccp -f ~/tmp/default-deny.yaml
-kubectl apply -n client --context aws -f ~/tmp/default-deny.yaml
+     ```
+     # Apply default-deny policy to client (EKS) and stars (on-prem) namespaces
+     cat <<EOF > ~/tmp/default-deny.yaml
+     kind: NetworkPolicy
+     apiVersion: networking.k8s.io/v1
+     metadata:
+       name: default-deny
+     spec:
+       podSelector:
+         matchLabels: {}
+     EOF
 
-# Apply the normal backend policy to on-prem
-cat <<EOF | kubectl apply --context ccp -f -
-kind: NetworkPolicy
-apiVersion: networking.k8s.io/v1
-metadata:
-  namespace: stars
-  name: backend-policy
-spec:
-  podSelector:
-    matchLabels:
-      role: backend
-  ingress:
-    - from:
-      - podSelector:
-            matchLabels:
-              role: frontend
-      ports:
-        - protocol: TCP
-          port: 6379
-EOF
+     kubectl apply -n stars --context ccp -f ~/tmp/default-deny.yaml
+     kubectl apply -n client --context aws -f ~/tmp/default-deny.yaml
+     ```
 
-# Apply the normal allow-ui-client in EKS
-cat <<EOF | kubectl apply --context aws -f -
-kind: NetworkPolicy
-apiVersion: networking.k8s.io/v1
-metadata:
-  namespace: client 
-  name: allow-ui 
-spec:
-  podSelector:
-    matchLabels: {}
-  ingress:
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              role: management-ui 
-EOF
+  1. Allow `frontend` as client of `backend`.  _NOTE: Since the allowed client service is in
+     the same cluster as the server service, this is identical to the original example policy._
 
+     ```
+     # Apply the normal backend policy to on-prem
+     cat <<EOF | kubectl apply --context ccp -f -
+     kind: NetworkPolicy
+     apiVersion: networking.k8s.io/v1
+     metadata:
+       namespace: stars
+       name: backend-policy
+     spec:
+       podSelector:
+         matchLabels:
+           role: backend
+       ingress:
+         - from:
+           - podSelector:
+                      matchLabels:
+                   role: frontend
+           ports:
+             - protocol: TCP
+               port: 6379
+     EOF
+     ```
 
-# Allow-ui in on-prem stars namespace
-mgmtui_ep=$(kubectl get endpoints management-ui -n management-ui --context aws -o jsonpath="{.subsets[0].addresses[0].ip}")
-mgmtui_ep_port=$(kubectl get endpoints management-ui -n management-ui --context aws -o jsonpath="{.subsets[0].ports[0].port}")
+  1. Allow `management-ui` as client of `client`.  _NOTE: Since the allowed client service is in
+     the same cluster as the server service, this is identical to the original example policy._
 
-cat <<EOF | kubectl create --context ccp -f -
-apiVersion: extensions/v1beta1
-kind: NetworkPolicy
-metadata:
-  name: allow-ui
-  namespace: stars
-spec:
-  podSelector:
-    matchLabels: {}
-  ingress:
-  - from:
-    - ipBlock:
-        cidr: ${mgmtui_ep}/32
-  policyTypes:
-  - Ingress
-EOF
+     ```
+     # Apply the normal allow-ui-client in EKS
+     cat <<EOF | kubectl apply --context aws -f -
+     kind: NetworkPolicy
+     apiVersion: networking.k8s.io/v1
+     metadata:
+       namespace: client 
+       name: allow-ui 
+     spec:
+       podSelector:
+         matchLabels: {}
+       ingress:
+         - from:
+             - namespaceSelector:
+                 matchLabels:
+                   role: management-ui 
+     EOF
+     ```
 
-# Allow client (EKS) to access frontend (on-prem)
-client_ep=$(kubectl get endpoints client -n client --context aws -o jsonpath="{.subsets[0].addresses[0].ip}")
-cat <<EOF | kubectl create --context ccp -f -
-kind: NetworkPolicy
-apiVersion: networking.k8s.io/v1
-metadata:
-  namespace: stars
-  name: frontend-policy
-spec:
-  podSelector:
-    matchLabels:
-      role: frontend
-  ingress:
-    - from:
-        - ipBlock:
-            cidr: ${client_ep}/32
-      ports:
-        - protocol: TCP
-          port: 80
-EOF
-```
+  1. Allow `management-ui` (EKS) as client of the `stars` namespace services (on-prem).
+
+     ```
+     # Get the IP of the management-ui pod
+     mgmtui_ep=$(kubectl get endpoints management-ui -n management-ui --context aws -o jsonpath="{.subsets[0].addresses[0].ip}")
+     
+     cat <<EOF | kubectl create --context ccp -f -
+     apiVersion: extensions/v1beta1
+     kind: NetworkPolicy
+     metadata:
+       name: allow-ui
+       namespace: stars
+     spec:
+       podSelector:
+         matchLabels: {}
+       ingress:
+         - from:
+           - ipBlock:
+               cidr: ${mgmtui_ep}/32
+     EOF
+     ```
+
+     **NOTE:**  The identity of the `management-ui` workload in the network policy is its pod IP for
+     policies applied to the on-premises cluster .  See the below [Limitations](#limitations) explanation.
+
+  1. Allow `client` (EKS) as client of `frontend` (on-prem).
+
+     ```
+     # Get the IP of the client pod
+     client_ep=$(kubectl get endpoints client -n client --context aws -o jsonpath="{.subsets[0].addresses[0].ip}")
+     
+     cat <<EOF | kubectl create --context ccp -f -
+     kind: NetworkPolicy
+     apiVersion: networking.k8s.io/v1
+     metadata:
+       namespace: stars
+       name: frontend-policy
+     spec:
+       podSelector:
+         matchLabels:
+           role: frontend
+       ingress:
+         - from:
+             - ipBlock:
+                 cidr: ${client_ep}/32
+           ports:
+             - protocol: TCP
+               port: 80
+     EOF
+     ```
+
+     **NOTE:**  The identity of the `client` workload in the network policy is its pod IP for
+     policies applied to the on-premises cluster .  See the below [Limitations](#limitations) explanation.
 
 Upon completion, the desired application communication should be shown as in the image below:
 
-**Desired Communication:** C allowed client to F, and F allowed client to B.
+**Desired Communication:** C allowed client to F, and F allowed client to B
+(`client` -> `frontend` -> `backend`).
 
 ![stars-final.png](images/stars-final.png)
 
 **NOTE:** In order to display the nodes in the figure, the `management-ui` service is an allowed
 client to all services.
+
+
+### Limitations
+
+The enforcement of the `ingress` policy rules is at the ingress of the server pods so, for clients
+outside of the server service's cluster the identity of the client workload in the network policy is
+its pod IP.  The limitations of this approach are detailed in [Network Policy Limitations](../limitations.md)
+but the highlights for this example are as follows:
+
+ - No SNAT between EKS and on-prem.  With SNAT every workload in EKS will potentially have the same
+   source IP and using the SNAT CIDR would have allowed BOTH the `client` and `management-ui`
+   as clients of the `backend` service when only the `management-ui` should be allowed.
+
+ - Pod IP changes must be reflected in the network-policy configuration for server services with
+   remote clients.
 
 ## References
 

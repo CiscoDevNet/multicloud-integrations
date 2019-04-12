@@ -41,3 +41,11 @@ We have put together some example scenarios so you can directly see the impact o
 and try things out for yourself.
 
 * [Calico Stars Example Across EKS and CCP with DMVPN](examples/dmvpn_eks_ccp_calico_stars.md)
+
+  * [Deploying the Multicloud Clusters and DMVPN Connectivity](examples/dmvpn_eks_ccp_calico_stars.md#deploying-the-multicloud-clusters-and-dmvpn-connectivity)
+
+    * [Deploy the AWS EKS Cluster](examples/dmvpn_eks_ccp_calico_stars.md#deploy-the-aws-eks-cluster)
+
+    * [Deploy the DMVPN & Inter-cloud Pod Routing Connectivity](examples/dmvpn_eks_ccp_calico_stars.md#deploy-the-dmvpn--inter-cloud-pod-routing-connectivity)
+
+  * [Deploying the Calico Stars Application Across Clouds](examples/dmvpn_eks_ccp_calico_stars.md#deploying-the-calico-stars-application-across-clouds)
