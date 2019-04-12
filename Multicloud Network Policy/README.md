@@ -31,7 +31,7 @@ the individuals background.  Therefore to start us off we will first describe wh
 network policy as it applies in a Kubernetes environment.  Please follow link to the more
 detailed discussion of network policy. 
 
-# [K8s Network Policy](https://github.com/john-a-joyce/multicloud-integrations/blob/network-policy-struct/Multicloud%20Network%20Policy/k8s_network_polcy.md#network-policy)
+## [K8s Network Policy](./k8s_network_policy.md#network-policy)
 
 Network policy has some significant limitations when applied to multicloud environments.
 The limitations we describe in the next section are not simply due to the implementations
@@ -39,17 +39,29 @@ that provide the API semantics.  They are more fundimental and would difficult t
 overcome at the network layer of the protocol stack.  Please follow the link to the more
 detailed discussion of these limitations.
 
-# [Limitations](https://github.com/john-a-joyce/multicloud-integrations/blob/network-policy-struct/Multicloud%20Network%20Policy/limitations.md#network-policy-limitations)
+## [Limitations](./limitations.md#network-policy-limitations)
 
 We have put together some example scenarios so you can directly see the impact of these limitations
 and try things out for yourself.  Please follow the next link to follow the procedure or you can jump right to specfic steps if your environment is already partially setup.
 
-# [Calico Stars Example Across EKS and CCP with DMVPN](examples/dmvpn_eks_ccp_calico_stars.md)
+## [Calico Stars Example Across EKS and CCP with DMVPN](examples/dmvpn_eks_ccp_calico_stars.md)
 
-## [Deploying the Multicloud Clusters and DMVPN Connectivity](examples/dmvpn_eks_ccp_calico_stars.md#deploying-the-multicloud-clusters-and-dmvpn-connectivity)
+### [Deploying the Multicloud Clusters and DMVPN Connectivity](examples/dmvpn_eks_ccp_calico_stars.md#deploying-the-multicloud-clusters-and-dmvpn-connectivity)
 
-## [Deploy the AWS EKS Cluster](examples/dmvpn_eks_ccp_calico_stars.md#deploy-the-aws-eks-cluster)
+### [Deploy the AWS EKS Cluster](examples/dmvpn_eks_ccp_calico_stars.md#deploy-the-aws-eks-cluster)
 
-## [Deploy the DMVPN & Inter-cloud Pod Routing Connectivity](examples/dmvpn_eks_ccp_calico_stars.md#deploy-the-dmvpn--inter-cloud-pod-routing-connectivity)
+### [Deploy the DMVPN & Inter-cloud Pod Routing Connectivity](examples/dmvpn_eks_ccp_calico_stars.md#deploy-the-dmvpn--inter-cloud-pod-routing-connectivity)
 
-## [Deploying the Calico Stars Application Across Clouds](examples/dmvpn_eks_ccp_calico_stars.md#deploying-the-calico-stars-application-across-clouds)
+### [Deploying the Calico Stars Application Across Clouds](examples/dmvpn_eks_ccp_calico_stars.md#deploying-the-calico-stars-application-across-clouds)
+
+The previous discuss focused on network level policy.  We will move on to
+applicaiton level policy or more precisely policy that can be applied at layer 7
+of the protocol stack. Application layer policy is much more suitable to a
+multicloud environment. There are a few reasons for this. One of the primary
+reasons is that the policy can be expressed in more or less the same language
+as the application itself as it is deployed across multiple clusters.  Therefore,
+it doesn't rely on being expressed in terms of network addressing constructs
+that are not consistent across multiple clouds.  Please follow the link for a more 
+complete discussion of the additional benefits.
+
+## [Application Policy Advantages](./app_policy.md#Application
