@@ -46,13 +46,15 @@ and try things out for yourself.  Please follow the next link to follow the proc
 
 ## [Calico Stars Example Across EKS and CCP with DMVPN](examples/dmvpn_eks_ccp_calico_stars.md)
 
-### [Deploying the Multicloud Clusters and DMVPN Connectivity](examples/dmvpn_eks_ccp_calico_stars.md#deploying-the-multicloud-clusters-and-dmvpn-connectivity)
+* [Deploying the Multicloud Clusters and DMVPN Connectivity](examples/dmvpn_eks_ccp_calico_stars.md#deploying-the-multicloud-clusters-and-dmvpn-connectivity)
 
-### [Deploy the AWS EKS Cluster](examples/dmvpn_eks_ccp_calico_stars.md#deploy-the-aws-eks-cluster)
+* [Deploy the AWS EKS Cluster](examples/dmvpn_eks_ccp_calico_stars.md#deploy-the-aws-eks-cluster)
 
-### [Deploy the DMVPN & Inter-cloud Pod Routing Connectivity](examples/dmvpn_eks_ccp_calico_stars.md#deploy-the-dmvpn--inter-cloud-pod-routing-connectivity)
+* [Deploy the DMVPN & Inter-cloud Pod Routing Connectivity](examples/dmvpn_eks_ccp_calico_stars.md#deploy-the-dmvpn--inter-cloud-pod-routing-connectivity)
 
-### [Deploying the Calico Stars Application Across Clouds](examples/dmvpn_eks_ccp_calico_stars.md#deploying-the-calico-stars-application-across-clouds)
+* [Deploying the Calico Stars Application Across Clouds](examples/dmvpn_eks_ccp_calico_stars.md#deploying-the-calico-stars-application-across-clouds)
+
+## Application Level Policy
 
 The previous discuss focused on network level policy.  We will move on to
 applicaiton level policy or more precisely policy that can be applied at layer 7
@@ -64,4 +66,4 @@ it doesn't rely on being expressed in terms of network addressing constructs
 that are not consistent across multiple clouds.  Please follow the link for a more 
 complete discussion of the additional benefits.
 
-## [Application Policy Advantages](./app_policy.md#Application
+## [Application Policy Advantages](./app_policy.md##application-level-policy)
