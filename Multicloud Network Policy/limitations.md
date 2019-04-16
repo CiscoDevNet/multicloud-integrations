@@ -1,13 +1,15 @@
 # Network Policy Limitations
 
-In our testing we have found network policy works well in a single cloud environment in every
-environment we tested.  When we have extended that testing to multicloud environments we found
-significant limitations.  If the multicloud environment features a VPN without NAT between
-the inter-cloud pod traffic then network policy has some limited utility.  If any sort of
-NAT is used between the inter-cloud pod traffic then network policy becomes almost
-useless.  When network policy is applied in a multicloud environment but the traffic is between
-pods in the same cluster things work as well as in a single cloud environment.  In other words
-the limitations that will be described below only affect inter-cloud traffic.
+In our testing we have found network policy works well in a single cloud environment
+in every environment we tested.  When we have extended that testing to multicloud
+environments we found significant limitations.  If the multicloud environment
+features a Virtual Private Network (VPN) without Network Address Translation (NAT)
+between the inter-cloud pod traffic then network policy has some limited utility.
+If any sort of NAT is used between the inter-cloud pod traffic then network
+policy becomes almost useless.  When network policy is applied in a multicloud
+environment but the traffic is between pods in the same cluster things work
+as well as in a single cloud environment.  In other words the limitations that
+will be described below only affect inter-cloud traffic.
 
 # Application Policy
 
@@ -25,8 +27,9 @@ will explain why and discuss application layer policy in more detail.
 
 # Review of Match Criteria For Intra-cloud Network Policy
 
-Distilling the Calico and K8s network policy APIs the user can specify matches against pods,
-namespaces, labels (i.e. all network endpoints in given namespace) and IP CIDRs.  The IP CIDRs
+Distilling the Calico and K8s network policy APIs the user can specify matches against
+pods, namespaces, labels (i.e. all network endpoints in given namespace) and
+Internet Protocol (IP) Classless Inter-domain Routing (CIDRs.  The IP CIDRs
 matches transcend all K8s resource types.  For example the CIDR matches will work for pod
 IPs, cluster IPs, load balance IPs or external IPs that fall within the CIDR. The matches
 can be applied in the ingress, egress or both directions.  The APIs also allow matching based on
@@ -51,8 +54,8 @@ NAT addresses.  So references to remote clouds pod traffic can only be done usin
 source IPs assigned to the NAT pool (for ingress rules) or publically exposed service
 IPs (for egress rules)
 
-* Even when NAT is not specifically configured between the clouds some public clouds default
-behavior is to use SNAT when leaving the cluster (e.g. AWS)
+* Even when NAT is not specifically configured between the clouds some public clouds
+default behavior is to use Source NAT (SNAT) when leaving the cluster (e.g. AWS)
 
 * Some network policy implementations will only pay attention to the address in the
 endpoint spec. Calico is one example.  So name based references that should match
@@ -71,8 +74,7 @@ IPs be used in the API calls.  As a contrived example let's say Cloud 1 has both
 user interface and front-end pods while cloud 2 hosts back-end pods.  The desired policy
 is that the back-end should only accept requests from the front-end and no other clients.
 In such an example the policy rules would need to be granular enough to delineate between
-the front-end and UI pods from the same cluster. Without specialized pod IPAM individual
-pod IP must be used.
+the front-end and UI pods from the same cluster. Without specialized pod IP Address Management (IPAM) individual pod IP must be used.
 
 Even when the rules are expressed at the level of individual pod IPs the pod IPs are likely to
 change over time unless it is an extremely stable environment. If the pod IPs can change then
@@ -96,5 +98,7 @@ traffic rules could only be expressed cluster wide.
 In a NAT environment it is also easy to express client side egress rules to any public facing and
 change invariant IPs.
 
-To continue by going through a network policy example return to the main page.
+To continue by going through a network policy 
+[example] (./examples/dmvpn_eks_ccp_calico_stars.md)
+return to the main page.
 

@@ -35,9 +35,9 @@ detailed discussion of network policy.
 
 Network policy has some significant limitations when applied to multicloud environments.
 The limitations we describe in the next section are not simply due to the implementations
-that provide the API semantics.  They are more fundimental and would difficult to
-overcome at the network layer of the protocol stack.  Please follow the link to the more
-detailed discussion of these limitations.
+that provide the application program interface (API) semantics.  They are more
+fundimental and would difficult to overcome at the network layer of the protocol
+stack.  Please follow the link to the more detailed discussion of these limitations.
 
 ## [Limitations](./limitations.md#network-policy-limitations)
 
