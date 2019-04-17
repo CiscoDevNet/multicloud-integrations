@@ -44,15 +44,15 @@ stack.  Please follow the link to the more detailed discussion of these limitati
 We have put together some example scenarios so you can directly see the impact of these limitations
 and try things out for yourself.  Please follow the next link to follow the procedure or you can jump right to specfic steps if your environment is already partially setup.
 
-## [Calico Stars Example Across EKS and CCP with DMVPN](examples/dmvpn_eks_ccp_calico_stars.md)
+## [Calico Stars Example Across EKS and CCP with DMVPN](../Multicloud%20Automation/examples/dmvpn_eks_ccp_calico_stars.md)
 
-* [Deploying the Multicloud Clusters and DMVPN Connectivity](examples/dmvpn_eks_ccp_calico_stars.md#deploying-the-multicloud-clusters-and-dmvpn-connectivity)
+* [Deploying the Multicloud Clusters and DMVPN Connectivity](../Multicloud%20Automation/examples/dmvpn_eks_ccp_calico_stars.md#deploying-the-multicloud-clusters-and-dmvpn-connectivity)
 
-* [Deploy the AWS EKS Cluster](examples/dmvpn_eks_ccp_calico_stars.md#deploy-the-aws-eks-cluster)
+* [Deploy the AWS EKS Cluster](../Multicloud%20Automation/examples/dmvpn_eks_ccp_calico_stars.md#deploy-the-aws-eks-cluster)
 
-* [Deploy the DMVPN & Inter-cloud Pod Routing Connectivity](examples/dmvpn_eks_ccp_calico_stars.md#deploy-the-dmvpn--inter-cloud-pod-routing-connectivity)
+* [Deploy the DMVPN & Inter-cloud Pod Routing Connectivity](../Multicloud%20Automation/examples/dmvpn_eks_ccp_calico_stars.md#deploy-the-dmvpn--inter-cloud-pod-routing-connectivity)
 
-* [Deploying the Calico Stars Application Across Clouds](examples/dmvpn_eks_ccp_calico_stars.md#deploying-the-calico-stars-application-across-clouds)
+* [Deploying the Calico Stars Application Across Clouds](../Multicloud%20Automation/examples/dmvpn_eks_ccp_calico_stars.md#deploying-the-calico-stars-application-across-clouds)
 
 ## Application Level Policy
 

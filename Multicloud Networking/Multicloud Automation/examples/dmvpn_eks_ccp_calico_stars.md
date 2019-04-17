@@ -3,23 +3,25 @@
 In this example we use the [Stars](https://docs.aws.amazon.com/eks/latest/userguide/calico.html)
 example application created by the Calico project to
 demonstrate the effects of Kubernetes network policies.  This example has a nice simple
-UI that illustrates communication between microservices.  To demonstrate multicloud
+User Interface (UI) that illustrates communication between microservices.  To demonstrate multicloud
 network policy, we show a deployment with microservices in different clouds and example
 Kubernetes network policy configurations to achieve the same behavior as the single
 cluster original demo.  The example is built upon the multicloud routing capabilities
 in a multicloud DMVPN design.
 
-This example goes through expansion of the CCP tenancy into the AWS cloud via the CCP
-integrated EKS deployment capability.  Additionally, we highlight the
-multicloud DMVPN connectivity possibilities via use of example automation for provisioning
-an AWS EC2 hosted CSR instance as a DMVPN endpoint in the VPC and distributing routes to
-on-premises Kubernetes tenant pods into the VPC routing infrastructure.
+This example goes through expansion of the Cisco Container Platform (CCP) tenancy into
+the Amazon Web Services (AWS) cloud via the CCP integrated AWS EKS deployment capability.
+Additionally, we highlight the multicloud Dynamic Multipoint Virtual Private Network
+(DMVPN) connectivity possibilities via use of example automation for provisioning
+an AWS EC2 hosted Cisco Cloud Services Router (CSR) instance as a DMVPN endpoint
+in the VPC and distributing routes to on-premises Kubernetes tenant pods into
+the VPC routing infrastructure.
 
 ## Prerequisites
 
 1. CCP installation with a local tenant Kubernetes cluster deployed.
 1. CCP configured with an AWS "infrastructure provider" tied to an AWS IAM role with
-   sufficient privileges to create an EKS cluster.
+   sufficient privileges to create an AWS EKS cluster.
 1. For executing the scripts in this example shell environment variable `MCINTEG_ROOT`
    must be set to the root directory of the locally cloned `multicloud-integrations` repo.
 
@@ -27,16 +29,16 @@ on-premises Kubernetes tenant pods into the VPC routing infrastructure.
 
 The following steps are an automation example for using CCP to deploy an AWS EKS cluster with
 network-policy functionality (via Calico) and the
-[AWS CSR-DMVPN networking model](../../AWS/AWSConfig/networking/docs/network/csr-dmvpn/README.md).
+[AWS CSR-DMVPN networking model](../../../AWS/AWSConfig/networking/docs/network/csr-dmvpn/README.md).
 The example automation also enables the VPC and EKS cluster for
-[hybrid cloud pod networking](../../AWS/AWSConfig/networking/docs/network/csr-dmvpn/pod-networking.md)
-as the network-policy example requires inter-cluster pod-to-pod communication.
+[hybrid cloud pod networking](../../../AWS/AWSConfig/networking/docs/network/csr-dmvpn/pod-networking.md)
+as the network-policy example requires inter-cluster pod-to-pod layer 3 reachability.
 
 ### Deploy the AWS EKS Cluster
 
-The example automation [bringup_aws_cluster.py](../../AWS/AWSConfig/networking/automation/scripts/bringup_aws_cluster.py)
+The example automation [bringup_aws_cluster.py](../../../AWS/AWSConfig/networking/automation/scripts/bringup_aws_cluster.py)
 is used to trigger CCP to create an AWS EKS cluster.  Additionally, it enables network-policy functionality
-and disables SNAT on the cluster.
+and disables Source Network Address Translation (SNAT) on the cluster.
 
 **Cluster configuration file `/cfg/ccp/aws.yaml` content:**
 
@@ -66,8 +68,9 @@ apply_manifests:
 
 ```
 
-**NOTE:** The `apply_manifests` list will apply each manifest to the EKS cluster using kubectl.  In
-this case it applies the AWS VPC CNI compatible Calico manifest for the network-policy feature.
+**NOTE:** The `apply_manifests` list will apply each manifest to the AWS EKS cluster using kubectl.
+In this case it applies the AWS VPC Container Network Interface (CNI) compatible Calico manifest
+for the network-policy feature.
 
 **Script Execution:**
 
@@ -75,17 +78,17 @@ this case it applies the AWS VPC CNI compatible Calico manifest for the network-
 $ ./bringup_aws_cluster.py --ccpIp 127.0.0.1 --ccpPort 29443 --ccpPassword 'abcd123!' --providerStr myAwsProv --clusterCfgFile /cfg/ccp/aws.yaml
 ```
 
-Upon completion of the above a EKS cluster named `aws` has been created by CCP and its
+Upon completion of the above an AWS EKS cluster named `aws` has been created by CCP and its
 kubeconfig is stored in `/cfg/aws1-kubeconfig.yaml`.
 
 ### Deploy the DMVPN & Inter-cloud Pod Routing Connectivity
 
-The example automation [bringup_csr.py](../../AWS/AWSConfig/networking/automation/scripts/bringup_csr.py)
-is used to create a CSR instance in the VPC created for the EKS cluster `aws` and configure it
+The example automation [bringup_csr.py](../../../AWS/AWSConfig/networking/automation/scripts/bringup_csr.py)
+is used to create a Cisco CSR instance in the VPC created for the AWS EKS cluster `aws` and configure it
 for the DMVPN scenario.  Additionally, the automation enables pod-to-pod routing over the DMVPN
 connection between the clusters and adds the security group rules to allow traffic
 between clusters' pods as detailed in
-["Enabling Hybrid Cloud Pod Networking for the AWS CSR-DMVPN Model"](../../AWS/AWSConfig/networking/docs/network/csr-dmvpn/pod-networking.md).
+["Enabling Hybrid Cloud Pod Networking for the AWS CSR-DMVPN Model"](../../../AWS/AWSConfig/networking/docs/network/csr-dmvpn/pod-networking.md).
 
 **DMVPN Configuration file `/cfg/ccp/dmvpn_conf.yaml` content:**
 
@@ -126,7 +129,7 @@ ospf:
 
 _Where_
 
-  - `onPremCidr` is the on-premises network CIDR to allow in VPC subnet security-groups
+  - `onPremCidr` is the on-premises network Classless Inter-domain Routing (CIDR) to allow in VPC subnet security-groups
 
   - `onPremPodCidr` is the on-premises Kubernetes cluster pod CIDR to allow in VPC subnet security-groups
 
@@ -230,7 +233,7 @@ round-trip min/avg/max = 22.505/22.593/22.718 ms
 ## Deploying the Calico Stars Application Across Clouds
 
 The [Stars](https://docs.aws.amazon.com/eks/latest/userguide/calico.html) application consists
-of 4 microservices--a `frontend` service, a `backend` service, a `client` service, and
+of 4 microservices a `frontend` service, a `backend` service, a `client` service, and
 the `management-ui` service.  The `client`, `frontend`, and `backend` all attempt to send
 requests to each other and the `management-ui` service polls the other 3 to indicate
 the communication directions allowed.
@@ -314,7 +317,7 @@ still functions fine if you choose to stick with the original example's `NodePor
 ### Mapping Services into Each Cluster's DNS
 
 The following uses the example automation to replicate services and endpoints to remote clusters
-as described in [K8s Multicluster Services in NAT-less Hybrid Cloud](../../common/networking/multicluster_services.md).
+as described in [K8s Multicluster Services in NAT-less Hybrid Cloud](../../../common/networking/multicluster_services.md).
 
 ```
 $ cat <<EOF > ~/tmp/multicluster_stars_svcs.yaml
@@ -497,19 +500,20 @@ outside of the server service's cluster the identity of the client workload in t
 its pod IP.  The limitations of this approach are detailed in [Network Policy Limitations](../limitations.md)
 but the highlights for this example are as follows:
 
- - No SNAT between EKS and on-prem.  With SNAT every workload in EKS will potentially have the same
+ - SNAT has to be disabled between EKS and on-prem.  With SNAT every workload in EKS will potentially have the same
    source IP and using the SNAT CIDR would have allowed BOTH the `client` and `management-ui`
    as clients of the `backend` service when only the `management-ui` should be allowed.
 
- - Pod IP changes must be reflected in the network-policy configuration for server services with
-   remote clients.
+ - When a Pod's IP changes this must be reflected in the network-policy configuration for
+   server services with remote clients.  This potentially could require some kind of automation
+   to watch for such changes.
 
 ## References
 
-- [AWS CSR-DMVPN Model](../../AWS/AWSConfig/networking/docs/network/csr-dmvpn/README.md)
+- [AWS CSR-DMVPN Model](../../../AWS/AWSConfig/networking/docs/network/csr-dmvpn/README.md)
 
-- [Enabling Hybrid Cloud Pod Networking for the AWS CSR-DMVPN Model](../../AWS/AWSConfig/networking/docs/network/csr-dmvpn/pod-networking.md)
+- [Enabling Hybrid Cloud Pod Networking for the AWS CSR-DMVPN Model](../../../AWS/AWSConfig/networking/docs/network/csr-dmvpn/pod-networking.md)
 
-- [K8s Multicluster Services in NAT-less Hybrid Cloud](../../common/networking/multicluster_services.md)
+- [K8s Multicluster Services in NAT-less Hybrid Cloud](../../../common/networking/multicluster_services.md)
 
 - [Calico Stars Demo on AWS](https://docs.aws.amazon.com/eks/latest/userguide/calico.html)

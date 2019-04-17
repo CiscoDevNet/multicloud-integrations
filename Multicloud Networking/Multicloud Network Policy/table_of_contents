@@ -1,0 +1,25 @@
+# What is Kubernetes network policy
+
+## Limitations
+
+## Examples and scripts
+
+# Pod routing 
+
+## Examples and scripts
+
+# A short plug for app level policy
+
+
+-----------------------------------------------------
+# Testing & results? 
+No will be implicit in next item.  
+
+# Possible Improvements
+No - but note "Ensure CNIs enforce policies on service endpoints regardless of whether a pod spec is present
+"
+# The DNS problem?
+No - some references above
+
+
+

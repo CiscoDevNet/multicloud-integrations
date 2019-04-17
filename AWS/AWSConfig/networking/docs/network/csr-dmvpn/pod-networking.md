@@ -1,14 +1,17 @@
 # Enabling Hybrid Cloud Pod Networking for the AWS CSR-DMVPN Model
 
-This section describes the additional steps for enabling inter-k8s cluster pod-to-pod networking without NAT in the CCP & AWS CSR DMVPN model.  
+This section describes the additional steps for enabling inter-K8s cluster pod-to-pod networking
+without Network Address Translation (NAT) in the Cisco Container Platform (CCP) & Amazon
+Web Services (AWS) AWS Cisco Cloud Services Router (CSR) Dynamic Multipoint Virtual
+Private Network (DMVPN) model.
 
-**Figure 1.  Pod-to-pod communication between pods in EKS and on-prem CCP tenant clusters.**
+**Figure 1.  Pod-to-pod communication between pods in AWS EKS and on-prem CCP tenant clusters.**
 
 ![pod-to-pod](./images/pod_to_pod_comm.png)
 
 ## AWS VPC Steps
 
-For the deployment of the AWS VPC side of the DMVPN, the Cisco CSR was used to create the DMVPN connection.  The Cloudformation template to deploy the CSR instance creates routes to the CSR instance for the on-premises IP CIDR in the VPC's routing tables for the private subnets.  The on-premises IP CIDR is for the network that the CCP tenant clusters' nodes are deployed on.  This allows reaching the Kubernetes *nodes* in any on-premises CCP tenant clusters.
+For the deployment of the AWS VPC side of the DMVPN, the Cisco CSR was used to create the DMVPN connection.  The Cloudformation template to deploy the CSR instance creates routes to the CSR instance for the on-premises Internet Protocol (IP) Classless Inter-domain Routing (CIDR) in the VPC's routing tables for the private subnets.  The on-premises IP CIDR is for the network that the CCP tenant clusters' nodes are deployed on.  This allows reaching the Kubernetes *nodes* in any on-premises CCP tenant clusters.
 
 The AWS VPC-side steps to allow pod-routing are:
 
@@ -16,15 +19,15 @@ The AWS VPC-side steps to allow pod-routing are:
 1. Setup [Security Groups](#Security-Groups)
 1. (_Optional_) Setup [EKS Pod SNAT](EKS-Pod-SNAT)
 
-### VPC Route-tables
+### AWS VPC Route-tables
 
-Given that the default route for VPC private subnets is the VPC NAT Gateway, the CCP tenant Kubernetes clusters' pod network CIDRs will be routed to the VPC NAT Gateway instead of through the DMVPN connection.  To route on-premises pod CIDRs through the DMVPN, the VPC's private subnets' route tables need to have routes added for any on-premises clusters' pod CIDRs with a next-hop of the VPC's CSR.
+Given that the default route for AWS VPC private subnets is the VPC NAT gateway, the CCP tenant Kubernetes clusters' pod network CIDRs will be routed to the VPC NAT gateway instead of through the DMVPN connection.  To route on-premises pod CIDRs through the DMVPN, the VPC's private subnets' route tables need to have routes added for any on-premises clusters' pod CIDRs with a next-hop of the VPC's CSR.
 
 **Figure 2.  Pod Route Distribution to VPC private subnets' route-tables.**
 
 ![pod-routing](images/pod_routing.png)
 
-The following shows example AWS CLI commands to update the private subnet route tables to add routes for the on-premises clusters' pod CIDRs.
+The following shows example AWS Command Line Interface (CLI) commands to update the private subnet route tables to add routes for the on-premises clusters' pod CIDRs.
 
 ```
 # find the route tables for the private subnets in the VPC created by CCP
@@ -46,9 +49,9 @@ aws ec2 create-route --destination-cidr-block $ONPREMPODCIDR --network-interface
 aws ec2 create-route --destination-cidr-block $ONPREMPODCIDR --network-interface-id $csr_priv_eni --route-table-id $PrivateRouteTableId3
 ```
 
-### Security Groups
+### AWS Security Groups
 
-The VPC security groups restrict pod reachability to sources within the VPC private networks.  The security groups for worker nodes need to be updated to add ingress rules for traffic from the on-prem clusters' node and pod CIDRs.
+The AWS VPC security groups restrict pod reachability to sources within the VPC private networks.  The security groups for worker nodes need to be updated to add ingress rules for traffic from the on-prem clusters' node and pod CIDRs.
 
 ```
 # Required shell vars:
@@ -61,15 +64,15 @@ $ aws ec2 authorize-security-group-ingress --group-id ${worker_sg} --protocol -1
 $ aws ec2 authorize-security-group-ingress --group-id ${worker_sg} --protocol -1 --cidr ${ONPREMPODCIDR}
 ```
 
-### EKS Pod SNAT
+### AWS EKS Pod SNAT
 
-By default, the AWS VPC CNI automatically installed in EKS clusters will perform SNAT on any pod traffic leaving the EKS nodes.  This is unnecessary for the EKS clusters set up by CCP and the DMVPN interconnect scenario as the EKS pods receive IPs from the private subnets and are routed in the VPC via the private-subnets' route-tables.  The AWS VPC CNI procedure for disabling pod SNAT is describe [in the AWS documentation for external-SNAT](https://docs.aws.amazon.com/eks/latest/userguide/external-snat.html).
+By default, the AWS VPC CNI automatically installed in AWS EKS clusters will perform SNAT on any pod traffic leaving the EKS nodes.  This is unnecessary for the AWS EKS clusters set up by CCP and the DMVPN interconnect scenario as the EKS pods receive IPs from the private subnets and are routed in the VPC via the private-subnets' route-tables.  Not only is it unnecessary, network policy would be restricted in this deployment without disabling it. The AWS VPC CNI procedure for disabling pod SNAT is described [in the AWS documentation for external-SNAT](https://docs.aws.amazon.com/eks/latest/userguide/external-snat.html).
 
 ## Example Automation
 
 [bringup_aws_cluster.py](../../../automation/scripts/bringup_aws_cluster.py) -- Uses CCP to create an AWS EKS cluster, disables SNAT in the cluster, and enables calico for network-policy.
 
-[bringup_csr.py](../../../automation/scripts/bringup_csr.py) -- Uses AWS CloudFormation to bringup a CSR & DMVPN configuration in a CCP created AWS VPC and performs the actions to enable inter-cluster pod-routing.
+[bringup_csr.py](../../../automation/scripts/bringup_csr.py) -- Uses AWS CloudFormation to bring up a CSR & DMVPN configuration in a AWS VPC created by CCP and performs the actions to enable inter-cluster pod-routing.
 
 ### Bringup AWS Cluster
 
@@ -109,7 +112,7 @@ apply_manifests:
 **Example Usage:**
 `bringup_csr.py --vpcNamePrefix eksCluster1 --sshKey my-ec2-key --onPremCidr 10.1.0.0/16 --onPremPodCidr 192.168.0.0/16 --clusterCfgFile /cfg/my_aws_clustercfg.yaml --dmvpnCfgFile /cfg/ccp_aws_dmvpn_conf.yaml --debug`
 
-**Example CSR bringup dmvpnCfgFile:**
+**Example CSR bring up dmvpnCfgFile:**
 ```
 ---
 InstanceType: c4.large

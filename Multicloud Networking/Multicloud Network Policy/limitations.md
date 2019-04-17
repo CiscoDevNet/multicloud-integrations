@@ -29,7 +29,7 @@ will explain why and discuss application layer policy in more detail.
 
 Distilling the Calico and K8s network policy APIs the user can specify matches against
 pods, namespaces, labels (i.e. all network endpoints in given namespace) and
-Internet Protocol (IP) Classless Inter-domain Routing (CIDRs.  The IP CIDRs
+Internet Protocol (IP) Classless Inter-domain Routing (CIDR)s.  The IP CIDRs
 matches transcend all K8s resource types.  For example the CIDR matches will work for pod
 IPs, cluster IPs, load balance IPs or external IPs that fall within the CIDR. The matches
 can be applied in the ingress, egress or both directions.  The APIs also allow matching based on
@@ -99,6 +99,6 @@ In a NAT environment it is also easy to express client side egress rules to any 
 change invariant IPs.
 
 To continue by going through a network policy 
-[example] (./examples/dmvpn_eks_ccp_calico_stars.md)
+[example] (../Multicloud%20Automation/examples/dmvpn_eks_ccp_calico_stars.md)
 return to the main page.
 
