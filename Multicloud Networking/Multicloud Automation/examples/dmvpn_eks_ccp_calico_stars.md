@@ -317,7 +317,7 @@ still functions fine if you choose to stick with the original example's `NodePor
 ### Mapping Services into Each Cluster's DNS
 
 The following uses the example automation to replicate services and endpoints to remote clusters
-as described in [K8s Multicluster Services in NAT-less Hybrid Cloud](../../../common/networking/multicluster_services.md).
+as described in [K8s Multicluster Services in NAT-less Hybrid Cloud](../networking/multicluster_services.md).
 
 ```
 $ cat <<EOF > ~/tmp/multicluster_stars_svcs.yaml
@@ -497,7 +497,7 @@ client to all services.
 
 The enforcement of the `ingress` policy rules is at the ingress of the server pods so, for clients
 outside of the server service's cluster the identity of the client workload in the network policy is
-its pod IP.  The limitations of this approach are detailed in [Network Policy Limitations](../limitations.md)
+its pod IP.  The limitations of this approach are detailed in [Network Policy Limitations](../../limitations.md)
 but the highlights for this example are as follows:
 
  - SNAT has to be disabled between EKS and on-prem.  With SNAT every workload in EKS will potentially have the same
@@ -514,6 +514,6 @@ but the highlights for this example are as follows:
 
 - [Enabling Hybrid Cloud Pod Networking for the AWS CSR-DMVPN Model](../../../AWS/AWSConfig/networking/docs/network/csr-dmvpn/pod-networking.md)
 
-- [K8s Multicluster Services in NAT-less Hybrid Cloud](../../../common/networking/multicluster_services.md)
+- [K8s Multicluster Services in NAT-less Hybrid Cloud](../multicluster_services.md)
 
 - [Calico Stars Demo on AWS](https://docs.aws.amazon.com/eks/latest/userguide/calico.html)

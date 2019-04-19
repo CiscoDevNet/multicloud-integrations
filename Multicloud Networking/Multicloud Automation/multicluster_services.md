@@ -15,7 +15,7 @@ and endpoints set to the 1st clusters pods.
 
 ## Example Automation
 
-[create_svc_endpoints.py](automation/scripts/create_svc_endpoints.py)
+[create_svc_endpoints.py](scripts/create_svc_endpoints.py)
 
 **Usage Example:**  `create_svc_endpoints.py --clusterSvcCfgFile ~/tmp/multicluster_svcs_mc_aws.yaml --debug`
 
