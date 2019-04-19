@@ -99,6 +99,6 @@ In a NAT environment it is also easy to express client side egress rules to any 
 change invariant IPs.
 
 To continue by going through a network policy 
-[example] (../Multicloud%20Automation/examples/dmvpn_eks_ccp_calico_stars.md)
+[example](../Multicloud%20Automation/examples/dmvpn_eks_ccp_calico_stars.md)
 return to the main page.
 

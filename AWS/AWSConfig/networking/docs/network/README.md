@@ -12,4 +12,4 @@ The following network deployment options support the primary use case mentioned 
 For hybrid-cloud workloads interconnected via VPN, it is possible to route between Kubernetes pods located on either side of the VPN tunnel.  The following sections provide details on setups and considerations:
 
 *  [Enabling Hybrid Cloud Pod Networking for the AWS CSR-DMVPN Model](csr-dmvpn/pod-networking.md)
-*  [Setting up K8s Multicluster Services in NAT-less hybrid cloud setups](/common/networking/multicluster_services.md)
+*  [Setting up K8s Multicluster Services in NAT-less hybrid cloud setups](../../../../../Multicloud%20Networking/Multicloud%20Automation/multicluster_services.md)

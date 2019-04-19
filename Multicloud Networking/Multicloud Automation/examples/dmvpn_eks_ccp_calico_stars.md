@@ -317,7 +317,7 @@ still functions fine if you choose to stick with the original example's `NodePor
 ### Mapping Services into Each Cluster's DNS
 
 The following uses the example automation to replicate services and endpoints to remote clusters
-as described in [K8s Multicluster Services in NAT-less Hybrid Cloud](../networking/multicluster_services.md).
+as described in [K8s Multicluster Services in NAT-less Hybrid Cloud](../multicluster_services.md).
 
 ```
 $ cat <<EOF > ~/tmp/multicluster_stars_svcs.yaml
@@ -451,7 +451,7 @@ the same effective policy as the original [Calico Stars Demo on AWS](https://doc
      ```
 
      **NOTE:**  The identity of the `management-ui` workload in the network policy is its pod IP for
-     policies applied to the on-premises cluster .  See the below [Limitations](#limitations) explanation.
+     policies applied to the on-premises cluster.  See the below [Limitations](#limitations) explanation.
 
   1. Allow `client` (EKS) as client of `frontend` (on-prem).
 
@@ -480,7 +480,7 @@ the same effective policy as the original [Calico Stars Demo on AWS](https://doc
      ```
 
      **NOTE:**  The identity of the `client` workload in the network policy is its pod IP for
-     policies applied to the on-premises cluster .  See the below [Limitations](#limitations) explanation.
+     policies applied to the on-premises cluster.  See the below [Limitations](#limitations) explanation.
 
 Upon completion, the desired application communication should be shown as in the image below:
 
@@ -497,7 +497,7 @@ client to all services.
 
 The enforcement of the `ingress` policy rules is at the ingress of the server pods so, for clients
 outside of the server service's cluster the identity of the client workload in the network policy is
-its pod IP.  The limitations of this approach are detailed in [Network Policy Limitations](../../limitations.md)
+its pod IP.  The limitations of this approach are detailed in [Network Policy Limitations](../../Multicloud%20Network%20Policy/limitations.md)
 but the highlights for this example are as follows:
 
  - SNAT has to be disabled between EKS and on-prem.  With SNAT every workload in EKS will potentially have the same

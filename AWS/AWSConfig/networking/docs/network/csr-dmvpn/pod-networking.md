@@ -15,9 +15,9 @@ For the deployment of the AWS VPC side of the DMVPN, the Cisco CSR was used to c
 
 The AWS VPC-side steps to allow pod-routing are:
 
-1. Setup [VPC Route-tables](#VPC-Route-tables)
-1. Setup [Security Groups](#Security-Groups)
-1. (_Optional_) Setup [EKS Pod SNAT](EKS-Pod-SNAT)
+1. Setup [VPC Route-tables](#aws-vpc-route-tables)
+1. Setup [Security Groups](#aws-security-groups)
+1. (_Optional_) Setup [EKS Pod SNAT](#aws-eks-pod-snat)
 
 ### AWS VPC Route-tables
 
